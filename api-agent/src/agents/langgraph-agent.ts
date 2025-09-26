@@ -236,11 +236,14 @@ Respond with a clear, step-by-step plan.
         }
       } else if (task.includes("blog") || task.includes("post")) {
         if (task.includes("create")) {
-          const result = await this.tools.blog.createPost(
-            "AI Generated Post",
-            "This is an AI-generated blog post about the requested topic.",
-            "AI-generated content"
-          );
+          // Extract topic from the command
+          const topic = task
+            .replace(/create.*blog.*post.*about/i, "")
+            .replace(/create.*post.*about/i, "")
+            .trim();
+          const finalTopic = topic || "AI trends in e-commerce";
+
+          const result = await this.tools.blog.createPost(finalTopic);
           results.push({
             tool: "blog",
             action: "createPost",

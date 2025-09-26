@@ -19,7 +19,7 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(posts);
+    return NextResponse.json({ posts });
   } catch (error) {
     console.error("Error fetching posts:", error);
     return NextResponse.json(

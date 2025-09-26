@@ -1,5 +1,4 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { prisma } from "../../../src/lib/prisma";
 import { LMStudioUtils } from "../lib/lmstudio-utils";
 import { config } from "../lib/config";
 
@@ -52,30 +51,17 @@ export class BlogTool {
       const slug = this.generateSlug(title);
       const excerpt = this.generateExcerpt(postContent);
 
-      // Create post in database
-      const post = await prisma.post.create({
-        data: {
-          title,
-          slug,
-          content: postContent,
-          excerpt,
-          authorId: 1, // Default admin user
-          status: "PUBLISHED",
-        },
-        include: {
-          author: {
-            select: {
-              name: true,
-              email: true,
-            },
-          },
-        },
-      });
-
-      return post;
+      // Return the generated content (web app will handle database creation)
+      return {
+        title,
+        slug,
+        content: postContent,
+        excerpt,
+        status: "DRAFT",
+      };
     } catch (error) {
       throw new Error(
-        `Failed to create blog post: ${
+        `Failed to generate blog post: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );

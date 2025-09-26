@@ -38,8 +38,8 @@ const statusColors = {
   DRAFT:
     "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
   PUBLISHED:
-    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  TRASHED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
+  TRASHED: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200",
 };
 
 export default function PostsPage() {
@@ -48,6 +48,11 @@ export default function PostsPage() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [newPost, setNewPost] = useState({
+    title: "",
+    content: "",
+    excerpt: "",
+  });
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -115,6 +120,7 @@ export default function PostsPage() {
 
   const handleGenerateWithAI = async () => {
     try {
+      // First, get AI-generated content
       const response = await fetch("/api/agent/command", {
         method: "POST",
         headers: {
@@ -127,11 +133,36 @@ export default function PostsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("AI generated post:", data);
-        // Refresh posts list
-        const postsResponse = await fetch("/api/posts");
-        const postsData = await postsResponse.json();
-        setPosts(postsData.posts || []);
+        console.log("AI generated content:", data);
+
+        // Create the post in the database
+        const postResponse = await fetch("/api/posts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: "AI Trends in E-Commerce: The Future of Online Shopping",
+            content:
+              data.result?.response ||
+              "AI-generated content about e-commerce trends...",
+            excerpt:
+              "Explore the latest AI trends revolutionizing the e-commerce industry and how they're shaping the future of online shopping.",
+            status: "DRAFT",
+          }),
+        });
+
+        if (postResponse.ok) {
+          // Refresh posts list
+          const postsResponse = await fetch("/api/posts");
+          const postsData = await postsResponse.json();
+          setPosts(postsData.posts || []);
+
+          // Show success message
+          alert("AI-generated blog post created successfully!");
+        } else {
+          console.error("Error creating post:", await postResponse.text());
+        }
       }
     } catch (error) {
       console.error("Error generating post with AI:", error);
@@ -203,7 +234,7 @@ export default function PostsPage() {
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <FileText className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -220,8 +251,8 @@ export default function PostsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Eye className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
+                <Eye className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -289,20 +320,28 @@ export default function PostsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setPosts((prev) =>
-                      prev.map((p) =>
-                        p.id === post.id
-                          ? {
-                              ...p,
-                              status:
-                                p.status === "PUBLISHED"
-                                  ? "DRAFT"
-                                  : "PUBLISHED",
-                            }
-                          : p
-                      )
-                    );
+                  onClick={async () => {
+                    const newStatus =
+                      post.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+                    try {
+                      const response = await fetch(`/api/posts/${post.id}`, {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ status: newStatus }),
+                      });
+
+                      if (response.ok) {
+                        setPosts((prev) =>
+                          prev.map((p) =>
+                            p.id === post.id ? { ...p, status: newStatus } : p
+                          )
+                        );
+                      }
+                    } catch (error) {
+                      console.error("Error updating post status:", error);
+                    }
                   }}
                   className="h-8 w-8 p-0"
                 >
@@ -315,12 +354,20 @@ export default function PostsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setPosts((prev) =>
-                      prev.map((p) =>
-                        p.id === post.id ? { ...p, status: "TRASHED" } : p
-                      )
-                    );
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`/api/posts/${post.id}`, {
+                        method: "DELETE",
+                      });
+
+                      if (response.ok) {
+                        setPosts((prev) =>
+                          prev.filter((p) => p.id !== post.id)
+                        );
+                      }
+                    } catch (error) {
+                      console.error("Error deleting post:", error);
+                    }
                   }}
                   className="h-8 w-8 p-0"
                 >
@@ -347,6 +394,10 @@ export default function PostsPage() {
                 <label className="block text-sm font-medium mb-2">Title</label>
                 <input
                   type="text"
+                  value={newPost.title}
+                  onChange={(e) =>
+                    setNewPost({ ...newPost, title: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Enter post title..."
                 />
@@ -356,6 +407,8 @@ export default function PostsPage() {
                   Content
                 </label>
                 <RichTextEditor
+                  value={newPost.content}
+                  onChange={(content) => setNewPost({ ...newPost, content })}
                   placeholder="Write your post content..."
                   className="min-h-[200px]"
                 />
@@ -366,6 +419,10 @@ export default function PostsPage() {
                 </label>
                 <textarea
                   rows={3}
+                  value={newPost.excerpt}
+                  onChange={(e) =>
+                    setNewPost({ ...newPost, excerpt: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Brief description of the post..."
                 />
@@ -374,11 +431,41 @@ export default function PostsPage() {
             <div className="flex justify-end space-x-3 mt-6">
               <Button
                 variant="secondary"
-                onClick={() => setIsCreateModalOpen(false)}
+                onClick={() => {
+                  setIsCreateModalOpen(false);
+                  setNewPost({ title: "", content: "", excerpt: "" });
+                }}
               >
                 Cancel
               </Button>
-              <Button onClick={() => setIsCreateModalOpen(false)}>
+              <Button
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/posts", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        title: newPost.title,
+                        content: newPost.content,
+                        excerpt: newPost.excerpt,
+                        status: "DRAFT",
+                        authorId: 1, // Default author ID
+                      }),
+                    });
+
+                    if (response.ok) {
+                      const createdPost = await response.json();
+                      setPosts((prev) => [createdPost, ...prev]);
+                      setIsCreateModalOpen(false);
+                      setNewPost({ title: "", content: "", excerpt: "" });
+                    }
+                  } catch (error) {
+                    console.error("Error creating post:", error);
+                  }
+                }}
+              >
                 Create Post
               </Button>
             </div>

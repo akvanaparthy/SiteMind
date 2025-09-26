@@ -227,15 +227,15 @@ export default function SettingsPage() {
               <div
                 className={`p-2 rounded-lg ${
                   config.maintenanceMode
-                    ? "bg-red-100 dark:bg-red-900"
-                    : "bg-green-100 dark:bg-green-900"
+                    ? "bg-rose-100 dark:bg-rose-900"
+                    : "bg-emerald-100 dark:bg-emerald-900"
                 }`}
               >
                 <Globe
                   className={`h-6 w-6 ${
                     config.maintenanceMode
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-green-600 dark:text-green-400"
+                      ? "text-rose-600 dark:text-rose-400"
+                      : "text-emerald-600 dark:text-emerald-400"
                   }`}
                 />
               </div>
@@ -264,7 +264,7 @@ export default function SettingsPage() {
                 <Bot
                   className={`h-6 w-6 ${
                     config.aiAgentEnabled
-                      ? "text-blue-600 dark:text-blue-400"
+                      ? "text-indigo-600 dark:text-indigo-400"
                       : "text-gray-600 dark:text-gray-400"
                   }`}
                 />
@@ -287,14 +287,14 @@ export default function SettingsPage() {
               <div
                 className={`p-2 rounded-lg ${
                   config.cacheEnabled
-                    ? "bg-green-100 dark:bg-green-900"
+                    ? "bg-emerald-100 dark:bg-emerald-900"
                     : "bg-gray-100 dark:bg-gray-900"
                 }`}
               >
                 <Database
                   className={`h-6 w-6 ${
                     config.cacheEnabled
-                      ? "text-green-600 dark:text-green-400"
+                      ? "text-emerald-600 dark:text-emerald-400"
                       : "text-gray-600 dark:text-gray-400"
                   }`}
                 />
@@ -315,7 +315,7 @@ export default function SettingsPage() {
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <Clock className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -448,7 +448,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center space-x-3">
               {config.maintenanceMode && (
-                <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200">
                   <AlertTriangle className="h-3 w-3 mr-1" />
                   Active
                 </Badge>
@@ -481,7 +481,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center space-x-3">
               {config.aiAgentEnabled && (
-                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   Active
                 </Badge>

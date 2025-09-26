@@ -99,10 +99,11 @@ const _mockUsers: User[] = [
 ];
 
 const roleColors = {
-  USER: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  USER: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
   ADMIN:
     "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  AI_AGENT: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  AI_AGENT:
+    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
 };
 
 const roleIcons = {
@@ -318,7 +319,7 @@ export default function UsersPage() {
           e.stopPropagation();
           handleDeleteUser(user.id);
         }}
-        className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+        className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700"
       >
         <Trash2 className="h-4 w-4" />
       </Button>
@@ -440,7 +441,7 @@ export default function UsersPage() {
                       {regularUsers}
                     </p>
                   </div>
-                  <User className="h-8 w-8 text-blue-600" />
+                  <User className="h-8 w-8 text-indigo-600" />
                 </div>
               </CardContent>
             </Card>

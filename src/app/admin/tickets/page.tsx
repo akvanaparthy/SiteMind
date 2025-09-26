@@ -35,15 +35,16 @@ interface Ticket {
 }
 
 const statusColors = {
-  OPEN: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  CLOSED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  OPEN: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200",
+  CLOSED:
+    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
 };
 
 const priorityColors = {
-  LOW: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  LOW: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
   MEDIUM:
     "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  HIGH: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  HIGH: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200",
 };
 
 const priorityIcons = {
@@ -77,6 +78,17 @@ export default function TicketsPage() {
 
     fetchTickets();
   }, []);
+
+  const handleCreateTicket = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleAssignToAI = async () => {
+    // This would integrate with the AI agent
+    console.log("Assigning tickets to AI agent...");
+    // For now, just show a message
+    alert("AI assignment feature coming soon!");
+  };
 
   const filteredTickets = tickets.filter(
     (ticket) => statusFilter === "all" || ticket.status === statusFilter
@@ -247,7 +259,7 @@ export default function TicketsPage() {
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <MessageSquare className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <MessageSquare className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -264,8 +276,8 @@ export default function TicketsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
-                <Clock className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <div className="p-2 bg-rose-100 dark:bg-rose-900 rounded-lg">
+                <Clock className="h-6 w-6 text-rose-600 dark:text-rose-400" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -282,8 +294,8 @@ export default function TicketsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -356,17 +368,31 @@ export default function TicketsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setTickets((prev) =>
-                      prev.map((t) =>
-                        t.id === ticket.id
-                          ? {
-                              ...t,
-                              status: t.status === "OPEN" ? "CLOSED" : "OPEN",
-                            }
-                          : t
-                      )
-                    );
+                  onClick={async () => {
+                    const newStatus =
+                      ticket.status === "OPEN" ? "CLOSED" : "OPEN";
+                    try {
+                      const response = await fetch(
+                        `/api/tickets/${ticket.id}`,
+                        {
+                          method: "PATCH",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({ status: newStatus }),
+                        }
+                      );
+
+                      if (response.ok) {
+                        setTickets((prev) =>
+                          prev.map((t) =>
+                            t.id === ticket.id ? { ...t, status: newStatus } : t
+                          )
+                        );
+                      }
+                    } catch (error) {
+                      console.error("Error updating ticket status:", error);
+                    }
                   }}
                   className="h-8 w-8 p-0"
                 >

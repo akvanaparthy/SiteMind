@@ -116,6 +116,75 @@ app.get("/health", (req, res) => {
   res.json({ status: "healthy", timestamp: new Date().toISOString() });
 });
 
+// Get agent status endpoint
+app.get("/api/status", async (req, res) => {
+  try {
+    // Get basic status information
+    const status = {
+      status: "online",
+      timestamp: new Date().toISOString(),
+      model: config.llm.model.name,
+      provider: config.llm.provider,
+      features: {
+        autoModelLoading: config.features.autoModelLoading,
+        websocketReconnection: config.features.websocketReconnection,
+      },
+    };
+    res.json(status);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get agent status" });
+  }
+});
+
+// Process command endpoint
+app.post("/api/command", async (req, res) => {
+  try {
+    const { command, userId, timestamp } = req.body;
+
+    if (!command) {
+      return res.status(400).json({ error: "Command is required" });
+    }
+
+    // Log the incoming command
+    const logEntry = await logger.logTask(
+      `command_${Date.now()}`,
+      `Received command: ${command}`,
+      "PENDING"
+    );
+
+    try {
+      // Process command with agent
+      const result = await agent.processCommand(command, logEntry.id);
+
+      // Update log with success
+      await logger.updateTaskStatus(logEntry.id, "SUCCESS", result.details);
+
+      // Return result
+      res.json({
+        success: true,
+        response: result.response,
+        details: result.details,
+        logId: logEntry.id,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      // Update log with failure
+      await logger.updateTaskStatus(logEntry.id, "FAILED");
+
+      // Return error response
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+        logId: logEntry.id,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  } catch (error) {
+    console.error("Error processing command:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Get agent logs endpoint
 app.get("/logs", async (req, res) => {
   try {

@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
 
     // Forward the command to the AI agent service
     const agentUrl = process.env.AGENT_URL || "http://localhost:3001";
+    console.log(`Attempting to connect to agent at: ${agentUrl}/api/command`);
 
     try {
       const response = await fetch(`${agentUrl}/api/command`, {
@@ -27,6 +28,8 @@ export async function POST(request: NextRequest) {
           timestamp: new Date().toISOString(),
         }),
       });
+
+      console.log(`Agent response status: ${response.status}`);
 
       if (!response.ok) {
         throw new Error(

@@ -7,19 +7,19 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const product = await prisma.product.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: parseInt(id) },
     });
 
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(product);
+    return NextResponse.json(user);
   } catch (error) {
-    console.error("Error fetching product:", error);
+    console.error("Error fetching user:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to fetch user" },
       { status: 500 }
     );
   }
@@ -32,28 +32,24 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, description, price, imageUrl, category, stock, isActive } =
-      body;
+    const { email, name, role, isActive } = body;
 
-    const product = await prisma.product.update({
+    const user = await prisma.user.update({
       where: { id: parseInt(id) },
       data: {
+        email,
         name,
-        description,
-        price: price ? parseFloat(price) : undefined,
-        imageUrl,
-        category,
-        stock: stock ? parseInt(stock) : undefined,
+        role,
         isActive,
         updatedAt: new Date(),
       },
     });
 
-    return NextResponse.json(product);
+    return NextResponse.json(user);
   } catch (error) {
-    console.error("Error updating product:", error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to update user" },
       { status: 500 }
     );
   }
@@ -66,28 +62,24 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, description, price, imageUrl, category, stock, isActive } =
-      body;
+    const { email, name, role, isActive } = body;
 
-    const product = await prisma.product.update({
+    const user = await prisma.user.update({
       where: { id: parseInt(id) },
       data: {
+        ...(email && { email }),
         ...(name && { name }),
-        ...(description && { description }),
-        ...(price && { price: parseFloat(price) }),
-        ...(imageUrl !== undefined && { imageUrl }),
-        ...(category && { category }),
-        ...(stock !== undefined && { stock: parseInt(stock) }),
+        ...(role && { role }),
         ...(isActive !== undefined && { isActive }),
         updatedAt: new Date(),
       },
     });
 
-    return NextResponse.json(product);
+    return NextResponse.json(user);
   } catch (error) {
-    console.error("Error updating product:", error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to update user" },
       { status: 500 }
     );
   }
@@ -100,15 +92,15 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    await prisma.product.delete({
+    await prisma.user.delete({
       where: { id: parseInt(id) },
     });
 
-    return NextResponse.json({ message: "Product deleted successfully" });
+    return NextResponse.json({ message: "User deleted successfully" });
   } catch (error) {
-    console.error("Error deleting product:", error);
+    console.error("Error deleting user:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to delete user" },
       { status: 500 }
     );
   }
