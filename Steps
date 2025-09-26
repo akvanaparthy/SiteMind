@@ -1,0 +1,7 @@
+after node setup-dependencies.js
+
+1. Run: npm run setup-env (to create .env file)
+2. Run: npm run setup-db (to setup database)
+3. Start LMStudio and load your model
+4. Run: npm run dev (main application)
+5. Run: cd api-agent && npm run dev (AI agent)
