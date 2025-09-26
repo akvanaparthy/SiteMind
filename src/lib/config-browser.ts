@@ -130,13 +130,17 @@ class ConfigManager {
           url: process.env.AGENT_URL || "http://localhost:3001",
           websocket: {
             path: process.env.WS_PATH || "/ws",
-            reconnectAttempts: parseInt(process.env.WS_RECONNECT_ATTEMPTS || "5"),
+            reconnectAttempts: parseInt(
+              process.env.WS_RECONNECT_ATTEMPTS || "5"
+            ),
             reconnectDelay: parseInt(process.env.WS_RECONNECT_DELAY || "1000"),
           },
         },
       },
       database: {
-        url: process.env.DATABASE_URL || "postgresql://postgres:sitemind123@localhost:5432/sitemind",
+        url:
+          process.env.DATABASE_URL ||
+          "postgresql://postgres:sitemind123@localhost:5432/sitemind",
         pool: {
           min: parseInt(process.env.DB_POOL_MIN || "2"),
           max: parseInt(process.env.DB_POOL_MAX || "10"),
@@ -145,7 +149,9 @@ class ConfigManager {
       llm: {
         provider: process.env.LLM_PROVIDER || "lmstudio",
         model: {
-          name: process.env.LLM_MODEL_NAME || "llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b",
+          name:
+            process.env.LLM_MODEL_NAME ||
+            "llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b",
           temperature: {
             main: parseFloat(process.env.LLM_TEMP_MAIN || "0.1"),
             blog: parseFloat(process.env.LLM_TEMP_BLOG || "0.7"),
@@ -158,7 +164,9 @@ class ConfigManager {
           },
         },
         lmstudio: {
-          baseUrl: process.env.OPENAI_API_BASE?.replace("/v1", "") || "http://localhost:1234",
+          baseUrl:
+            process.env.OPENAI_API_BASE?.replace("/v1", "") ||
+            "http://localhost:1234",
           apiKey: process.env.OPENAI_API_KEY || "lm-studio",
           endpoints: {
             models: "/v1/models",
@@ -167,7 +175,10 @@ class ConfigManager {
           },
           timeout: parseInt(process.env.LLM_TIMEOUT || "30000"),
           autoLoad: process.env.LLM_AUTO_LOAD !== "false",
-          fallbackModels: (process.env.LLM_FALLBACK_MODELS || "llama-3.2-8x3b-moe,dark-champion").split(","),
+          fallbackModels: (
+            process.env.LLM_FALLBACK_MODELS ||
+            "llama-3.2-8x3b-moe,dark-champion"
+          ).split(","),
         },
         openai: {
           baseUrl: process.env.OPENAI_API_BASE || "https://api.openai.com/v1",
@@ -189,7 +200,10 @@ class ConfigManager {
       },
       security: {
         cors: {
-          origin: (process.env.CORS_ORIGIN || "http://localhost:3000,http://localhost:3001").split(","),
+          origin: (
+            process.env.CORS_ORIGIN ||
+            "http://localhost:3000,http://localhost:3001"
+          ).split(","),
           credentials: process.env.CORS_CREDENTIALS !== "false",
         },
         rateLimit: {

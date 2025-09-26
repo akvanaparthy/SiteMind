@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { Bot, Zap, Shield, ArrowRight, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -64,12 +61,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
+          <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
               The Future of
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -91,19 +83,14 @@ export default function HomePage() {
                 Watch Demo
               </Button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Stats Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8"
-          >
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
@@ -112,19 +99,14 @@ export default function HomePage() {
                 <div className="text-slate-600">{stat.label}</div>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-center mb-16"
-          >
+          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
               Powered by AI, Built for Scale
             </h2>
@@ -132,16 +114,11 @@ export default function HomePage() {
               Our platform combines the best of modern e-commerce with
               cutting-edge AI technology
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
-              >
+              <div key={index}>
                 <Card variant="glass" hover className="h-full">
                   <CardContent className="p-6 text-center">
                     <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -153,7 +130,7 @@ export default function HomePage() {
                     <p className="text-slate-600">{feature.description}</p>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -162,33 +139,27 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Transform Your Business?
-            </h2>
-            <p className="text-xl text-indigo-100 mb-8">
-              Join thousands of businesses already using AI to automate their
-              operations
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="secondary" className="px-8 py-4">
-                Start Free Trial
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Ready to Transform Your Business?
+          </h2>
+          <p className="text-xl text-indigo-100 mb-8">
+            Join thousands of businesses already using AI to automate their
+            operations
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="secondary" className="px-8 py-4">
+              Start Free Trial
+            </Button>
+            <Link href="/admin/dashboard">
+              <Button
+                size="lg"
+                variant="ghost"
+                className="px-8 py-4 text-white border-white hover:bg-white/10"
+              >
+                View Demo
               </Button>
-              <Link href="/admin/dashboard">
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  className="px-8 py-4 text-white border-white hover:bg-white/10"
-                >
-                  View Demo
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
+            </Link>
+          </div>
         </div>
       </section>
 
