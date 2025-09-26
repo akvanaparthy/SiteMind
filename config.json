@@ -1,0 +1,94 @@
+{
+  "app": {
+    "name": "SiteMind",
+    "version": "1.0.0",
+    "environment": "development"
+  },
+  "server": {
+    "main": {
+      "port": 3000,
+      "host": "localhost",
+      "url": "http://localhost:3000"
+    },
+    "agent": {
+      "port": 3001,
+      "host": "localhost",
+      "url": "http://localhost:3001",
+      "websocket": {
+        "path": "/ws",
+        "reconnectAttempts": 5,
+        "reconnectDelay": 1000
+      }
+    }
+  },
+  "database": {
+    "url": "postgresql://username:password@localhost:5432/sitemind",
+    "pool": {
+      "min": 2,
+      "max": 10
+    }
+  },
+  "llm": {
+    "provider": "lmstudio",
+    "model": {
+      "name": "llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b",
+      "temperature": {
+        "main": 0.1,
+        "blog": 0.7,
+        "creative": 0.9
+      },
+      "maxTokens": {
+        "default": 2048,
+        "blog": 4000,
+        "short": 100
+      }
+    },
+    "lmstudio": {
+      "baseUrl": "http://localhost:1234",
+      "apiKey": "lm-studio",
+      "endpoints": {
+        "models": "/v1/models",
+        "chat": "/v1/chat/completions",
+        "load": "/api/v0/models/load"
+      },
+      "timeout": 30000,
+      "autoLoad": true,
+      "fallbackModels": ["llama-3.2-8x3b-moe", "dark-champion"]
+    },
+    "openai": {
+      "baseUrl": "https://api.openai.com/v1",
+      "apiKey": "",
+      "timeout": 30000
+    }
+  },
+  "features": {
+    "autoModelLoading": true,
+    "websocketReconnection": true,
+    "logging": {
+      "level": "info",
+      "maxLogs": 1000
+    },
+    "caching": {
+      "enabled": true,
+      "ttl": 3600
+    }
+  },
+  "security": {
+    "cors": {
+      "origin": ["http://localhost:3000", "http://localhost:3001"],
+      "credentials": true
+    },
+    "rateLimit": {
+      "enabled": true,
+      "windowMs": 900000,
+      "max": 100
+    }
+  },
+  "external": {
+    "pinecone": {
+      "apiKey": "",
+      "environment": "",
+      "indexName": "sitemind-agent-memory"
+    }
+  }
+}
