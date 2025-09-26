@@ -25,26 +25,6 @@ export function Skeleton({
     circular: "rounded-full",
   };
 
-  const animationVariants = {
-    pulse: {
-      opacity: [0.5, 1, 0.5],
-      transition: {
-        duration: 1.5,
-        repeat: Infinity,
-        ease: "easeInOut",
-      },
-    },
-    wave: {
-      x: ["-100%", "100%"],
-      transition: {
-        duration: 1.5,
-        repeat: Infinity,
-        ease: "easeInOut",
-      },
-    },
-    none: {},
-  };
-
   const style = {
     width: width || (variant === "text" ? "100%" : undefined),
     height: height || (variant === "text" ? "1rem" : undefined),

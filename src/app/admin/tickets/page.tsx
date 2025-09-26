@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -34,45 +34,6 @@ interface Ticket {
   [key: string]: unknown;
 }
 
-const mockTickets: Ticket[] = [
-  {
-    id: 1,
-    ticketId: "TKT-001",
-    subject: "Order not delivered",
-    description:
-      "I placed an order 5 days ago but haven't received it yet. Can you please check the status?",
-    status: "OPEN",
-    priority: "HIGH",
-    customer: { name: "John Smith", email: "john@example.com" },
-    createdAt: "2024-01-15T10:30:00Z",
-    updatedAt: "2024-01-15T10:30:00Z",
-  },
-  {
-    id: 2,
-    ticketId: "TKT-002",
-    subject: "Product quality issue",
-    description:
-      "The product I received has some quality issues. Can I get a replacement?",
-    status: "OPEN",
-    priority: "MEDIUM",
-    customer: { name: "Sarah Johnson", email: "sarah@example.com" },
-    createdAt: "2024-01-14T14:20:00Z",
-    updatedAt: "2024-01-14T14:20:00Z",
-  },
-  {
-    id: 3,
-    ticketId: "TKT-003",
-    subject: "Account access problem",
-    description:
-      "I can't log into my account. It says my password is incorrect but I'm sure it's right.",
-    status: "CLOSED",
-    priority: "LOW",
-    customer: { name: "Mike Davis", email: "mike@example.com" },
-    createdAt: "2024-01-13T09:15:00Z",
-    updatedAt: "2024-01-13T16:45:00Z",
-  },
-];
-
 const statusColors = {
   OPEN: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
   CLOSED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
@@ -92,13 +53,30 @@ const priorityIcons = {
 };
 
 export default function TicketsPage() {
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "OPEN" | "CLOSED">(
     "all"
   );
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const response = await fetch("/api/tickets");
+        const data = await response.json();
+        setTickets(data.tickets || []);
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, []);
 
   const filteredTickets = tickets.filter(
     (ticket) => statusFilter === "all" || ticket.status === statusFilter
@@ -169,39 +147,33 @@ export default function TicketsPage() {
     },
   ];
 
-  const actions = [
-    {
-      label: "View",
-      icon: MessageSquare,
-      onClick: (ticket: Ticket) => {
-        setSelectedTicket(ticket);
-        setIsViewModalOpen(true);
-      },
-    },
-    {
-      label: (ticket: Ticket) =>
-        ticket.status === "OPEN" ? "Close" : "Reopen",
-      icon: (ticket: Ticket) =>
-        ticket.status === "OPEN" ? CheckCircle : Clock,
-      onClick: (ticket: Ticket) => {
-        setTickets((prev) =>
-          prev.map((t) =>
-            t.id === ticket.id
-              ? { ...t, status: t.status === "OPEN" ? "CLOSED" : "OPEN" }
-              : t
-          )
-        );
-      },
-    },
-  ];
-
   const handleCreateTicket = () => {
     setIsCreateModalOpen(true);
   };
 
-  const handleAssignToAI = () => {
-    // This would trigger the AI agent to handle the ticket
-    console.log("Assigning ticket to AI agent...");
+  const handleAssignToAI = async () => {
+    try {
+      const response = await fetch("/api/agent/command", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          command: "Process all open support tickets",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("AI processing tickets:", data);
+        // Refresh tickets list
+        const ticketsResponse = await fetch("/api/tickets");
+        const ticketsData = await ticketsResponse.json();
+        setTickets(ticketsData.tickets || []);
+      }
+    } catch (error) {
+      console.error("Error assigning tickets to AI:", error);
+    }
   };
 
   const openTickets = tickets.filter((t) => t.status === "OPEN").length;
@@ -209,6 +181,36 @@ export default function TicketsPage() {
   const highPriorityTickets = tickets.filter(
     (t) => t.priority === "HIGH" && t.status === "OPEN"
   ).length;
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Support Tickets
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage customer support requests and tickets
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

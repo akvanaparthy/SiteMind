@@ -7,218 +7,180 @@ import {
   Edit,
   Trash2,
   Eye,
-  Package,
-  DollarSign,
-  TrendingUp,
-  AlertCircle,
+  User,
+  Users,
+  UserCheck,
+  UserX,
+  Shield,
   Search,
-  MoreHorizontal,
 } from "lucide-react";
 import { DataTable } from "@/components/admin/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Navbar } from "@/components/admin/Navbar";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
-interface Product {
+interface User {
   id: number;
   name: string;
-  slug: string;
-  description: string;
-  price: number;
-  imageUrl?: string;
-  category?: string;
-  stock: number;
+  email: string;
+  role: "USER" | "ADMIN" | "AI_AGENT";
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  lastLogin?: string;
   [key: string]: unknown;
 }
 
 // Mock data - in real app, this would come from API
 // Removed mock data - using real API data
-const _mockProducts: Product[] = [
+const _mockUsers: User[] = [
   {
     id: 1,
-    name: "Premium Wireless Headphones",
-    slug: "premium-wireless-headphones",
-    description:
-      "High-quality wireless headphones with noise cancellation and 30-hour battery life.",
-    price: 299.99,
-    imageUrl: "/api/placeholder/300/300",
-    category: "Electronics",
-    stock: 50,
+    name: "John Doe",
+    email: "john@example.com",
+    role: "USER",
     isActive: true,
     createdAt: "2024-01-15T10:30:00Z",
     updatedAt: "2024-01-15T10:30:00Z",
+    lastLogin: "2024-01-20T14:30:00Z",
   },
   {
     id: 2,
-    name: "Smart Fitness Watch",
-    slug: "smart-fitness-watch",
-    description:
-      "Advanced fitness tracking with heart rate monitoring, GPS, and water resistance.",
-    price: 199.99,
-    imageUrl: "/api/placeholder/300/300",
-    category: "Electronics",
-    stock: 25,
+    name: "Jane Smith",
+    email: "jane@example.com",
+    role: "USER",
     isActive: true,
     createdAt: "2024-01-14T14:20:00Z",
     updatedAt: "2024-01-14T14:20:00Z",
+    lastLogin: "2024-01-19T09:15:00Z",
   },
   {
     id: 3,
-    name: "Organic Cotton T-Shirt",
-    slug: "organic-cotton-tshirt",
-    description:
-      "Comfortable and sustainable organic cotton t-shirt in various colors.",
-    price: 29.99,
-    imageUrl: "/api/placeholder/300/300",
-    category: "Clothing",
-    stock: 100,
+    name: "Admin User",
+    email: "admin@sitemind.com",
+    role: "ADMIN",
     isActive: true,
-    createdAt: "2024-01-13T09:15:00Z",
-    updatedAt: "2024-01-13T09:15:00Z",
+    createdAt: "2024-01-10T09:00:00Z",
+    updatedAt: "2024-01-10T09:00:00Z",
+    lastLogin: "2024-01-20T16:45:00Z",
   },
   {
     id: 4,
-    name: "Professional Camera Lens",
-    slug: "professional-camera-lens",
-    description:
-      "High-quality 50mm f/1.8 lens perfect for portrait and low-light photography.",
-    price: 449.99,
-    imageUrl: "/api/placeholder/300/300",
-    category: "Photography",
-    stock: 15,
+    name: "AI Agent",
+    email: "agent@sitemind.com",
+    role: "AI_AGENT",
     isActive: true,
-    createdAt: "2024-01-12T16:45:00Z",
-    updatedAt: "2024-01-12T16:45:00Z",
+    createdAt: "2024-01-10T09:00:00Z",
+    updatedAt: "2024-01-10T09:00:00Z",
+    lastLogin: "2024-01-20T16:50:00Z",
   },
   {
     id: 5,
-    name: "Bluetooth Speaker",
-    slug: "bluetooth-speaker",
-    description:
-      "Portable wireless speaker with 360-degree sound and 12-hour battery life.",
-    price: 79.99,
-    imageUrl: "/api/placeholder/300/300",
-    category: "Electronics",
-    stock: 0,
+    name: "Bob Johnson",
+    email: "bob@example.com",
+    role: "USER",
     isActive: false,
-    createdAt: "2024-01-11T12:30:00Z",
-    updatedAt: "2024-01-11T12:30:00Z",
+    createdAt: "2024-01-13T09:15:00Z",
+    updatedAt: "2024-01-13T09:15:00Z",
+    lastLogin: "2024-01-15T11:30:00Z",
+  },
+  {
+    id: 6,
+    name: "Alice Brown",
+    email: "alice@example.com",
+    role: "USER",
+    isActive: true,
+    createdAt: "2024-01-12T16:45:00Z",
+    updatedAt: "2024-01-12T16:45:00Z",
+    lastLogin: "2024-01-18T13:20:00Z",
   },
 ];
 
-const categories = [
-  "All",
-  "Electronics",
-  "Clothing",
-  "Photography",
-  "Accessories",
-];
+const roleColors = {
+  USER: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  ADMIN:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  AI_AGENT: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+};
 
-export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+const roleIcons = {
+  USER: User,
+  ADMIN: Shield,
+  AI_AGENT: UserCheck,
+};
+
+export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedRole, setSelectedRole] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchUsers = async () => {
       try {
-        const response = await fetch("/api/products");
+        const response = await fetch("/api/users");
         const data = await response.json();
-        setProducts(data.products || []);
+        setUsers(data.users || []);
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching users:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchUsers();
   }, []);
 
-  const filteredProducts = products.filter((product) => {
+  const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || product.category === selectedCategory;
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = selectedRole === "All" || user.role === selectedRole;
     const matchesStatus =
       selectedStatus === "All" ||
-      (selectedStatus === "Active" && product.isActive) ||
-      (selectedStatus === "Inactive" && !product.isActive);
+      (selectedStatus === "Active" && user.isActive) ||
+      (selectedStatus === "Inactive" && !user.isActive);
 
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   const columns = [
     {
       key: "name" as const,
-      label: "Product",
+      label: "User",
       sortable: true,
-      render: (value: unknown, item: Product) => (
+      render: (value: unknown, item: User) => (
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
-            {item.imageUrl ? (
-              <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="w-full h-full object-cover rounded-lg"
-              />
-            ) : (
-              <Package className="h-5 w-5 text-gray-400" />
-            )}
+          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+            <User className="h-5 w-5 text-gray-400" />
           </div>
           <div>
             <div className="font-medium text-slate-900">{String(value)}</div>
-            <div className="text-sm text-slate-500">{item.category}</div>
+            <div className="text-sm text-slate-500">{item.email}</div>
           </div>
         </div>
       ),
     },
     {
-      key: "price" as const,
-      label: "Price",
-      sortable: true,
-      render: (value: unknown) => (
-        <span className="font-medium text-slate-900">
-          {formatCurrency(Number(value))}
-        </span>
-      ),
-    },
-    {
-      key: "stock" as const,
-      label: "Stock",
+      key: "role" as const,
+      label: "Role",
       sortable: true,
       render: (value: unknown) => {
-        const stock = Number(value);
-        const isLowStock = stock < 10 && stock > 0;
-        const isOutOfStock = stock === 0;
-
+        const role = value as keyof typeof roleColors;
+        const Icon = roleIcons[role];
         return (
-          <div className="flex items-center space-x-2">
-            <span
-              className={`font-medium ${
-                isOutOfStock
-                  ? "text-red-600"
-                  : isLowStock
-                  ? "text-yellow-600"
-                  : "text-green-600"
-              }`}
-            >
-              {stock}
-            </span>
-            {isOutOfStock && <AlertCircle className="h-4 w-4 text-red-500" />}
-            {isLowStock && <AlertCircle className="h-4 w-4 text-yellow-500" />}
-          </div>
+          <Badge
+            className={`${roleColors[role]} flex items-center space-x-1 w-fit`}
+          >
+            <Icon className="h-3 w-3" />
+            <span>{role}</span>
+          </Badge>
         );
       },
     },
@@ -236,8 +198,18 @@ export default function ProductsPage() {
       },
     },
     {
+      key: "lastLogin" as const,
+      label: "Last Login",
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="text-slate-600">
+          {value ? formatDate(String(value)) : "Never"}
+        </span>
+      ),
+    },
+    {
       key: "createdAt" as const,
-      label: "Created",
+      label: "Joined",
       sortable: true,
       render: (value: unknown) => (
         <span className="text-slate-600">{formatDate(String(value))}</span>
@@ -245,69 +217,69 @@ export default function ProductsPage() {
     },
   ];
 
-  const handleCreateProduct = () => {
+  const handleCreateUser = () => {
     setIsCreateModalOpen(true);
   };
 
-  const handleEditProduct = (product: Product) => {
-    setSelectedProduct(product);
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
     setIsViewModalOpen(true);
   };
 
-  const handleViewProduct = (product: Product) => {
-    setSelectedProduct(product);
+  const handleViewUser = (user: User) => {
+    setSelectedUser(user);
     setIsViewModalOpen(true);
   };
 
-  const handleDeleteProduct = async (productId: number) => {
-    if (confirm("Are you sure you want to delete this product?")) {
+  const handleDeleteUser = async (userId: number) => {
+    if (confirm("Are you sure you want to delete this user?")) {
       try {
-        const response = await fetch(`/api/products/${productId}`, {
+        const response = await fetch(`/api/users/${userId}`, {
           method: "DELETE",
         });
 
         if (response.ok) {
-          setProducts((prev) => prev.filter((p) => p.id !== productId));
+          setUsers((prev) => prev.filter((u) => u.id !== userId));
         }
       } catch (error) {
-        console.error("Error deleting product:", error);
+        console.error("Error deleting user:", error);
       }
     }
   };
 
-  const handleToggleStatus = async (productId: number) => {
+  const handleToggleStatus = async (userId: number) => {
     try {
-      const product = products.find((p) => p.id === productId);
-      if (!product) return;
+      const user = users.find((u) => u.id === userId);
+      if (!user) return;
 
-      const response = await fetch(`/api/products/${productId}`, {
+      const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ isActive: !product.isActive }),
+        body: JSON.stringify({ isActive: !user.isActive }),
       });
 
       if (response.ok) {
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === productId ? { ...p, isActive: !p.isActive } : p
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, isActive: !u.isActive } : u
           )
         );
       }
     } catch (error) {
-      console.error("Error updating product status:", error);
+      console.error("Error updating user status:", error);
     }
   };
 
-  const actions = (product: Product) => (
+  const actions = (user: User) => (
     <div className="flex items-center space-x-2">
       <Button
         variant="ghost"
         size="sm"
         onClick={(e) => {
           e.stopPropagation();
-          handleViewProduct(product);
+          handleViewUser(user);
         }}
         className="h-8 w-8 p-0"
       >
@@ -318,7 +290,7 @@ export default function ProductsPage() {
         size="sm"
         onClick={(e) => {
           e.stopPropagation();
-          handleEditProduct(product);
+          handleEditUser(user);
         }}
         className="h-8 w-8 p-0"
       >
@@ -329,18 +301,22 @@ export default function ProductsPage() {
         size="sm"
         onClick={(e) => {
           e.stopPropagation();
-          handleToggleStatus(product.id);
+          handleToggleStatus(user.id);
         }}
         className="h-8 w-8 p-0"
       >
-        <MoreHorizontal className="h-4 w-4" />
+        {user.isActive ? (
+          <UserX className="h-4 w-4" />
+        ) : (
+          <UserCheck className="h-4 w-4" />
+        )}
       </Button>
       <Button
         variant="ghost"
         size="sm"
         onClick={(e) => {
           e.stopPropagation();
-          handleDeleteProduct(product.id);
+          handleDeleteUser(user.id);
         }}
         className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
       >
@@ -349,18 +325,16 @@ export default function ProductsPage() {
     </div>
   );
 
-  const totalProducts = products.length;
-  const activeProducts = products.filter((p) => p.isActive).length;
-  const lowStockProducts = products.filter(
-    (p) => p.stock < 10 && p.stock > 0
-  ).length;
-  const outOfStockProducts = products.filter((p) => p.stock === 0).length;
-  const totalValue = products.reduce((sum, p) => sum + p.price * p.stock, 0);
+  const totalUsers = users.length;
+  const activeUsers = users.filter((u) => u.isActive).length;
+  const adminUsers = users.filter((u) => u.role === "ADMIN").length;
+  const regularUsers = users.filter((u) => u.role === "USER").length;
+  const aiAgents = users.filter((u) => u.role === "AI_AGENT").length;
 
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <Navbar title="Products" />
+        <Navbar title="Users" />
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             {[...Array(5)].map((_, i) => (
@@ -382,25 +356,25 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navbar title="Products" />
+      <Navbar title="Users" />
 
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Products
+              Users
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Manage your product catalog and inventory
+              Manage user accounts and permissions
             </p>
           </div>
           <Button
-            onClick={handleCreateProduct}
+            onClick={handleCreateUser}
             className="flex items-center space-x-2"
           >
             <Plus className="h-4 w-4" />
-            <span>Add Product</span>
+            <span>Add User</span>
           </Button>
         </div>
 
@@ -416,13 +390,13 @@ export default function ProductsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600">
-                      Total Products
+                      Total Users
                     </p>
                     <p className="text-2xl font-bold text-slate-900">
-                      {totalProducts}
+                      {totalUsers}
                     </p>
                   </div>
-                  <Package className="h-8 w-8 text-indigo-600" />
+                  <Users className="h-8 w-8 text-indigo-600" />
                 </div>
               </CardContent>
             </Card>
@@ -437,12 +411,14 @@ export default function ProductsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">Active</p>
+                    <p className="text-sm font-medium text-slate-600">
+                      Active Users
+                    </p>
                     <p className="text-2xl font-bold text-slate-900">
-                      {activeProducts}
+                      {activeUsers}
                     </p>
                   </div>
-                  <TrendingUp className="h-8 w-8 text-green-600" />
+                  <UserCheck className="h-8 w-8 text-green-600" />
                 </div>
               </CardContent>
             </Card>
@@ -458,13 +434,13 @@ export default function ProductsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600">
-                      Low Stock
+                      Regular Users
                     </p>
                     <p className="text-2xl font-bold text-slate-900">
-                      {lowStockProducts}
+                      {regularUsers}
                     </p>
                   </div>
-                  <AlertCircle className="h-8 w-8 text-yellow-600" />
+                  <User className="h-8 w-8 text-blue-600" />
                 </div>
               </CardContent>
             </Card>
@@ -479,14 +455,12 @@ export default function ProductsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
-                      Out of Stock
-                    </p>
+                    <p className="text-sm font-medium text-slate-600">Admins</p>
                     <p className="text-2xl font-bold text-slate-900">
-                      {outOfStockProducts}
+                      {adminUsers}
                     </p>
                   </div>
-                  <AlertCircle className="h-8 w-8 text-red-600" />
+                  <Shield className="h-8 w-8 text-purple-600" />
                 </div>
               </CardContent>
             </Card>
@@ -502,13 +476,13 @@ export default function ProductsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600">
-                      Total Value
+                      AI Agents
                     </p>
                     <p className="text-2xl font-bold text-slate-900">
-                      {formatCurrency(totalValue)}
+                      {aiAgents}
                     </p>
                   </div>
-                  <DollarSign className="h-8 w-8 text-emerald-600" />
+                  <UserCheck className="h-8 w-8 text-emerald-600" />
                 </div>
               </CardContent>
             </Card>
@@ -524,7 +498,7 @@ export default function ProductsPage() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search products..."
+                    placeholder="Search users..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
@@ -533,15 +507,14 @@ export default function ProductsPage() {
               </div>
               <div className="flex gap-4">
                 <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
+                  <option value="All">All Roles</option>
+                  <option value="USER">User</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="AI_AGENT">AI Agent</option>
                 </select>
                 <select
                   value={selectedStatus}
@@ -557,22 +530,22 @@ export default function ProductsPage() {
           </CardContent>
         </Card>
 
-        {/* Products Table */}
+        {/* Users Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.5 }}
         >
           <DataTable
-            data={filteredProducts}
+            data={filteredUsers}
             columns={columns}
             actions={actions}
-            onRowClick={handleViewProduct}
+            onRowClick={handleViewUser}
           />
         </motion.div>
       </div>
 
-      {/* Create Product Modal */}
+      {/* Create User Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <motion.div
@@ -580,62 +553,43 @@ export default function ProductsPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
-            <h2 className="text-xl font-bold mb-4">Create New Product</h2>
+            <h2 className="text-xl font-bold mb-4">Create New User</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Product Name
+                  Full Name
                 </label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Enter product name..."
+                  placeholder="Enter full name..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Description
-                </label>
-                <textarea
-                  rows={3}
+                <label className="block text-sm font-medium mb-2">Email</label>
+                <input
+                  type="email"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Enter product description..."
+                  placeholder="Enter email address..."
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Price
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Stock
-                  </label>
-                  <input
-                    type="number"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="0"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Role</label>
+                <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                  <option value="USER">User</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="AI_AGENT">AI Agent</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Category
+                  Password
                 </label>
-                <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                  <option value="">Select category...</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Clothing">Clothing</option>
-                  <option value="Photography">Photography</option>
-                  <option value="Accessories">Accessories</option>
-                </select>
+                <input
+                  type="password"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter password..."
+                />
               </div>
             </div>
             <div className="flex justify-end space-x-3 mt-6">
@@ -646,15 +600,15 @@ export default function ProductsPage() {
                 Cancel
               </Button>
               <Button onClick={() => setIsCreateModalOpen(false)}>
-                Create Product
+                Create User
               </Button>
             </div>
           </motion.div>
         </div>
       )}
 
-      {/* View Product Modal */}
-      {isViewModalOpen && selectedProduct && (
+      {/* View User Modal */}
+      {isViewModalOpen && selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -662,14 +616,22 @@ export default function ProductsPage() {
             className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">{selectedProduct.name}</h2>
+              <h2 className="text-xl font-bold">{selectedUser.name}</h2>
               <div className="flex space-x-2">
                 <Badge
-                  variant={selectedProduct.isActive ? "success" : "danger"}
+                  className={`${
+                    roleColors[selectedUser.role]
+                  } flex items-center space-x-1`}
                 >
-                  {selectedProduct.isActive ? "Active" : "Inactive"}
+                  {(() => {
+                    const Icon = roleIcons[selectedUser.role];
+                    return <Icon className="h-3 w-3" />;
+                  })()}
+                  <span>{selectedUser.role}</span>
                 </Badge>
-                <Badge variant="info">{selectedProduct.category}</Badge>
+                <Badge variant={selectedUser.isActive ? "success" : "danger"}>
+                  {selectedUser.isActive ? "Active" : "Inactive"}
+                </Badge>
               </div>
             </div>
 
@@ -677,24 +639,26 @@ export default function ProductsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-slate-600">
-                    Price
+                    Email
                   </label>
-                  <p className="text-slate-900 font-medium">
-                    {formatCurrency(selectedProduct.price)}
-                  </p>
+                  <p className="text-slate-900">{selectedUser.email}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-600">
-                    Stock
+                    Last Login
                   </label>
-                  <p className="text-slate-900">{selectedProduct.stock}</p>
+                  <p className="text-slate-900">
+                    {selectedUser.lastLogin
+                      ? formatDate(selectedUser.lastLogin)
+                      : "Never"}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-600">
                     Created
                   </label>
                   <p className="text-slate-900">
-                    {formatDate(selectedProduct.createdAt)}
+                    {formatDate(selectedUser.createdAt)}
                   </p>
                 </div>
                 <div>
@@ -702,18 +666,9 @@ export default function ProductsPage() {
                     Updated
                   </label>
                   <p className="text-slate-900">
-                    {formatDate(selectedProduct.updatedAt)}
+                    {formatDate(selectedUser.updatedAt)}
                   </p>
                 </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-600">
-                  Description
-                </label>
-                <p className="text-slate-900 mt-1">
-                  {selectedProduct.description}
-                </p>
               </div>
             </div>
 
@@ -727,10 +682,10 @@ export default function ProductsPage() {
               <Button
                 onClick={() => {
                   setIsViewModalOpen(false);
-                  handleEditProduct(selectedProduct);
+                  handleEditUser(selectedUser);
                 }}
               >
-                Edit Product
+                Edit User
               </Button>
             </div>
           </motion.div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Eye, Edit, Package, Truck, RotateCcw } from "lucide-react";
 import { DataTable } from "@/components/admin/DataTable";
@@ -10,78 +10,47 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Navbar } from "@/components/admin/Navbar";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
-// Mock data
-const orders = [
-  {
-    id: "ORD-001",
-    orderId: "ORD-001",
-    customer: "John Doe",
-    email: "john@example.com",
-    total: 299.99,
-    status: "delivered",
-    createdAt: "2024-01-15T10:30:00Z",
-    items: [{ name: "Wireless Headphones", quantity: 1, price: 299.99 }],
-  },
-  {
-    id: "ORD-002",
-    orderId: "ORD-002",
-    customer: "Jane Smith",
-    email: "jane@example.com",
-    total: 149.5,
-    status: "pending",
-    createdAt: "2024-01-15T14:20:00Z",
-    items: [{ name: "Smart Watch", quantity: 1, price: 149.5 }],
-  },
-  {
-    id: "ORD-003",
-    orderId: "ORD-003",
-    customer: "Bob Johnson",
-    email: "bob@example.com",
-    total: 89.99,
-    status: "refunded",
-    createdAt: "2024-01-14T09:15:00Z",
-    items: [{ name: "Phone Case", quantity: 2, price: 44.99 }],
-  },
-  {
-    id: "ORD-004",
-    orderId: "ORD-004",
-    customer: "Alice Brown",
-    email: "alice@example.com",
-    total: 199.99,
-    status: "pending",
-    createdAt: "2024-01-14T16:45:00Z",
-    items: [{ name: "Laptop Stand", quantity: 1, price: 199.99 }],
-  },
-  {
-    id: "ORD-005",
-    orderId: "ORD-005",
-    customer: "Charlie Wilson",
-    email: "charlie@example.com",
-    total: 79.99,
-    status: "delivered",
-    createdAt: "2024-01-13T11:30:00Z",
-    items: [{ name: "Bluetooth Speaker", quantity: 1, price: 79.99 }],
-  },
-];
+interface Order {
+  id: string;
+  orderId: string;
+  customer: {
+    name: string;
+    email: string;
+  };
+  total: number;
+  status: "PENDING" | "DELIVERED" | "REFUNDED";
+  createdAt: string;
+  items: Array<{ name: string; quantity: number; price: number }>;
+  [key: string]: unknown;
+}
 
 const statusVariants = {
-  pending: { variant: "warning" as const, label: "Pending", icon: Package },
-  delivered: { variant: "success" as const, label: "Delivered", icon: Truck },
-  refunded: { variant: "danger" as const, label: "Refunded", icon: RotateCcw },
+  PENDING: { variant: "warning" as const, label: "Pending", icon: Package },
+  DELIVERED: { variant: "success" as const, label: "Delivered", icon: Truck },
+  REFUNDED: { variant: "danger" as const, label: "Refunded", icon: RotateCcw },
 };
 
 export default function OrdersPage() {
-  const [selectedOrder, setSelectedOrder] = useState<{
-    id: string;
-    orderId: string;
-    customer: string;
-    email: string;
-    total: number;
-    status: string;
-    createdAt: string;
-    items: Array<{ name: string; quantity: number; price: number }>;
-  } | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch("/api/orders");
+        const data = await response.json();
+        setOrders(data.orders || []);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   const columns = [
     {
@@ -96,10 +65,10 @@ export default function OrdersPage() {
       key: "customer" as const,
       label: "Customer",
       sortable: true,
-      render: (value: unknown, item: (typeof orders)[0]) => (
+      render: (value: unknown, item: Order) => (
         <div>
-          <div className="font-medium text-slate-900">{String(value)}</div>
-          <div className="text-sm text-slate-500">{item.email}</div>
+          <div className="font-medium text-slate-900">{item.customer.name}</div>
+          <div className="text-sm text-slate-500">{item.customer.email}</div>
         </div>
       ),
     },
@@ -142,40 +111,60 @@ export default function OrdersPage() {
     },
   ];
 
-  const handleRowClick = (order: {
-    id: string;
-    orderId: string;
-    customer: string;
-    email: string;
-    total: number;
-    status: string;
-    createdAt: string;
-    items: Array<{ name: string; quantity: number; price: number }>;
-  }) => {
+  const handleRowClick = (order: Order) => {
     setSelectedOrder(order);
     setShowModal(true);
   };
 
-  const handleStatusChange = (orderId: string, newStatus: string) => {
-    // In real app, this would make an API call
-    console.log(`Changing order ${orderId} status to ${newStatus}`);
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        // Update the order in the local state
+        setOrders((prev) =>
+          prev.map((order) =>
+            order.id === orderId
+              ? { ...order, status: newStatus as Order["status"] }
+              : order
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+    }
   };
 
-  const handleRefund = (orderId: string) => {
-    // In real app, this would make an API call
-    console.log(`Processing refund for order ${orderId}`);
+  const handleRefund = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "REFUNDED" }),
+      });
+
+      if (response.ok) {
+        // Update the order in the local state
+        setOrders((prev) =>
+          prev.map((order) =>
+            order.id === orderId ? { ...order, status: "REFUNDED" } : order
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error processing refund:", error);
+    }
   };
 
-  const actions = (order: {
-    id: string;
-    orderId: string;
-    customer: string;
-    email: string;
-    total: number;
-    status: string;
-    createdAt: string;
-    items: Array<{ name: string; quantity: number; price: number }>;
-  }) => (
+  const actions = (order: Order) => (
     <div className="flex items-center space-x-2">
       <Button
         variant="ghost"
@@ -192,18 +181,18 @@ export default function OrdersPage() {
         size="sm"
         onClick={(e) => {
           e.stopPropagation();
-          handleStatusChange(order.orderId, "delivered");
+          handleStatusChange(order.id, "DELIVERED");
         }}
       >
         <Edit className="h-4 w-4" />
       </Button>
-      {order.status === "pending" && (
+      {order.status === "PENDING" && (
         <Button
           variant="ghost"
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            handleRefund(order.orderId);
+            handleRefund(order.id);
           }}
         >
           <RotateCcw className="h-4 w-4" />
@@ -211,6 +200,29 @@ export default function OrdersPage() {
       )}
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Navbar title="Orders" />
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} variant="glass">
+                <CardContent className="p-6">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -254,7 +266,7 @@ export default function OrdersPage() {
                       Pending
                     </p>
                     <p className="text-2xl font-bold text-slate-900">
-                      {orders.filter((o) => o.status === "pending").length}
+                      {orders.filter((o) => o.status === "PENDING").length}
                     </p>
                   </div>
                   <Package className="h-8 w-8 text-yellow-600" />
@@ -276,7 +288,7 @@ export default function OrdersPage() {
                       Delivered
                     </p>
                     <p className="text-2xl font-bold text-slate-900">
-                      {orders.filter((o) => o.status === "delivered").length}
+                      {orders.filter((o) => o.status === "DELIVERED").length}
                     </p>
                   </div>
                   <Truck className="h-8 w-8 text-emerald-600" />
@@ -383,13 +395,17 @@ export default function OrdersPage() {
                   <label className="text-sm font-medium text-slate-600">
                     Customer
                   </label>
-                  <p className="text-slate-900">{selectedOrder.customer}</p>
+                  <p className="text-slate-900">
+                    {selectedOrder.customer.name}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-600">
                     Email
                   </label>
-                  <p className="text-slate-900">{selectedOrder.email}</p>
+                  <p className="text-slate-900">
+                    {selectedOrder.customer.email}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-600">

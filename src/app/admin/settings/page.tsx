@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -53,18 +53,61 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [lastAction, setLastAction] = useState<string | null>(null);
 
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch("/api/status");
+        const data = await response.json();
+        setConfig({
+          maintenanceMode: data.maintenanceMode || false,
+          lastCacheClear: data.lastCacheClear || null,
+          siteName: data.siteName || "SiteMind",
+          siteDescription:
+            data.siteDescription || "AI-Native E-Commerce Platform",
+          contactEmail: data.contactEmail || "admin@sitemind.com",
+          maxUploadSize: data.maxUploadSize || 10,
+          enableRegistration:
+            data.enableRegistration !== undefined
+              ? data.enableRegistration
+              : true,
+          enableComments:
+            data.enableComments !== undefined ? data.enableComments : true,
+          aiAgentEnabled:
+            data.aiAgentEnabled !== undefined ? data.aiAgentEnabled : true,
+          cacheEnabled:
+            data.cacheEnabled !== undefined ? data.cacheEnabled : true,
+          cacheTTL: data.cacheTTL || 3600,
+        });
+      } catch (error) {
+        console.error("Error fetching site config:", error);
+      }
+    };
+
+    fetchConfig();
+  }, []);
+
   const handleToggleMaintenance = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setConfig((prev) => ({
-        ...prev,
-        maintenanceMode: !prev.maintenanceMode,
-      }));
-      setLastAction(
-        `Maintenance mode ${!config.maintenanceMode ? "enabled" : "disabled"}`
-      );
+      const response = await fetch("/api/status", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          maintenanceMode: !config.maintenanceMode,
+        }),
+      });
+
+      if (response.ok) {
+        setConfig((prev) => ({
+          ...prev,
+          maintenanceMode: !prev.maintenanceMode,
+        }));
+        setLastAction(
+          `Maintenance mode ${!config.maintenanceMode ? "enabled" : "disabled"}`
+        );
+      }
     } catch (error) {
       console.error("Failed to toggle maintenance mode:", error);
     } finally {
@@ -75,13 +118,23 @@ export default function SettingsPage() {
   const handleClearCache = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setConfig((prev) => ({
-        ...prev,
-        lastCacheClear: new Date().toISOString(),
-      }));
-      setLastAction("Cache cleared successfully");
+      const response = await fetch("/api/status", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clearCache: true,
+        }),
+      });
+
+      if (response.ok) {
+        setConfig((prev) => ({
+          ...prev,
+          lastCacheClear: new Date().toISOString(),
+        }));
+        setLastAction("Cache cleared successfully");
+      }
     } catch (error) {
       console.error("Failed to clear cache:", error);
     } finally {
@@ -92,9 +145,21 @@ export default function SettingsPage() {
   const handleSaveSettings = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setLastAction("Settings saved successfully");
+      const response = await fetch("/api/status", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          siteName: config.siteName,
+          siteDescription: config.siteDescription,
+          contactEmail: config.contactEmail,
+        }),
+      });
+
+      if (response.ok) {
+        setLastAction("Settings saved successfully");
+      }
     } catch (error) {
       console.error("Failed to save settings:", error);
     } finally {
@@ -105,12 +170,25 @@ export default function SettingsPage() {
   const handleToggleAI = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setConfig((prev) => ({ ...prev, aiAgentEnabled: !prev.aiAgentEnabled }));
-      setLastAction(
-        `AI Agent ${!config.aiAgentEnabled ? "enabled" : "disabled"}`
-      );
+      const response = await fetch("/api/status", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          aiAgentEnabled: !config.aiAgentEnabled,
+        }),
+      });
+
+      if (response.ok) {
+        setConfig((prev) => ({
+          ...prev,
+          aiAgentEnabled: !prev.aiAgentEnabled,
+        }));
+        setLastAction(
+          `AI Agent ${!config.aiAgentEnabled ? "enabled" : "disabled"}`
+        );
+      }
     } catch (error) {
       console.error("Failed to toggle AI agent:", error);
     } finally {

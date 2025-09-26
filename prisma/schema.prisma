@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -90,11 +90,20 @@ enum TicketPriority {
 }
 
 model SiteConfig {
-  id              Int      @id @default(autoincrement())
-  maintenanceMode Boolean  @default(false)
-  lastCacheClear  DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  maintenanceMode   Boolean  @default(false)
+  lastCacheClear    DateTime?
+  siteName          String   @default("SiteMind")
+  siteDescription   String   @default("AI-Native E-Commerce Platform")
+  contactEmail      String   @default("admin@sitemind.com")
+  maxUploadSize     Int      @default(10)
+  enableRegistration Boolean @default(true)
+  enableComments    Boolean  @default(true)
+  aiAgentEnabled    Boolean  @default(true)
+  cacheEnabled      Boolean  @default(true)
+  cacheTTL          Int      @default(3600)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model AgentLog {

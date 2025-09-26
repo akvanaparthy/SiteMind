@@ -14,70 +14,103 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Navbar } from "@/components/admin/Navbar";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
 
-// Mock data - in real app, this would come from API
-const stats = {
-  orders: { total: 1247, change: 12.5, trend: "up" as const },
-  revenue: { total: 45680, change: -2.3, trend: "down" as const },
-  tickets: { total: 23, change: 8.1, trend: "up" as const },
-  posts: { total: 156, change: 15.2, trend: "up" as const },
-};
+interface DashboardStats {
+  totalOrders: number;
+  totalRevenue: number;
+  openTickets: number;
+  publishedPosts: number;
+  pendingOrders: number;
+  totalUsers: number;
+}
 
-const recentOrders = [
-  {
-    id: "ORD-001",
-    customer: "John Doe",
-    amount: 299.99,
-    status: "delivered",
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-002",
-    customer: "Jane Smith",
-    amount: 149.5,
-    status: "pending",
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-003",
-    customer: "Bob Johnson",
-    amount: 89.99,
-    status: "refunded",
-    date: "2024-01-14",
-  },
-];
+interface Order {
+  id: string;
+  orderId: string;
+  customer: {
+    name: string;
+    email: string;
+  };
+  total: number;
+  status: "PENDING" | "DELIVERED" | "REFUNDED";
+  createdAt: string;
+}
 
-const recentActivity = [
-  {
-    action: "Order #ORD-001 delivered",
-    time: "2 minutes ago",
-    type: "success",
-  },
-  { action: "New support ticket created", time: "5 minutes ago", type: "info" },
-  {
-    action: 'Blog post "AI Trends 2024" published',
-    time: "1 hour ago",
-    type: "success",
-  },
-  {
-    action: "Agent processed refund for ORD-003",
-    time: "2 hours ago",
-    type: "warning",
-  },
-];
+interface Activity {
+  action: string;
+  time: string;
+  type: "success" | "warning" | "info";
+}
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [agentStatus, setAgentStatus] = useState<"active" | "offline">(
-    "active"
+    "offline"
   );
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate agent status updates
-    const interval = setInterval(() => {
-      setAgentStatus((prev) => (prev === "active" ? "active" : "active"));
-    }, 5000);
+    const fetchData = async () => {
+      try {
+        // Fetch dashboard stats
+        const statsResponse = await fetch("/api/status");
+        const statsData = await statsResponse.json();
+        setStats(statsData.stats);
 
-    return () => clearInterval(interval);
+        // Fetch recent orders
+        const ordersResponse = await fetch("/api/orders?limit=5");
+        const ordersData = await ordersResponse.json();
+        setRecentOrders(ordersData.orders || []);
+
+        // Fetch agent status
+        const agentResponse = await fetch("/api/agent/command");
+        const agentData = await agentResponse.json();
+        setAgentStatus(agentData.status === "online" ? "active" : "offline");
+
+        // Mock recent activity (in real app, this would come from agent logs)
+        setRecentActivity([
+          {
+            action: "AI Agent processed order #ORD-001",
+            time: "2 minutes ago",
+            type: "success",
+          },
+          {
+            action: "New support ticket created",
+            time: "5 minutes ago",
+            type: "info",
+          },
+          {
+            action: 'Blog post "AI Trends 2024" published',
+            time: "1 hour ago",
+            type: "success",
+          },
+          {
+            action: "Agent processed refund for ORD-003",
+            time: "2 hours ago",
+            type: "warning",
+          },
+        ]);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const StatCard = ({
@@ -138,6 +171,29 @@ export default function DashboardPage() {
     </motion.div>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Navbar title="Dashboard" />
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} variant="glass">
+                <CardContent className="p-6">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar title="Dashboard" />
@@ -179,33 +235,33 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Orders"
-            value={stats.orders.total}
-            change={stats.orders.change}
-            trend={stats.orders.trend}
+            value={stats?.totalOrders || 0}
+            change={12.5}
+            trend="up"
             icon={ShoppingBag}
             color="bg-indigo-500"
           />
           <StatCard
             title="Revenue"
-            value={stats.revenue.total}
-            change={stats.revenue.change}
-            trend={stats.revenue.trend}
+            value={stats?.totalRevenue || 0}
+            change={-2.3}
+            trend="down"
             icon={DollarSign}
             color="bg-emerald-500"
           />
           <StatCard
             title="Open Tickets"
-            value={stats.tickets.total}
-            change={stats.tickets.change}
-            trend={stats.tickets.trend}
+            value={stats?.openTickets || 0}
+            change={8.1}
+            trend="up"
             icon={MessageSquare}
             color="bg-yellow-500"
           />
           <StatCard
             title="Blog Posts"
-            value={stats.posts.total}
-            change={stats.posts.change}
-            trend={stats.posts.trend}
+            value={stats?.publishedPosts || 0}
+            change={15.2}
+            trend="up"
             icon={FileText}
             color="bg-purple-500"
           />
@@ -233,20 +289,22 @@ export default function DashboardPage() {
                       className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                     >
                       <div>
-                        <p className="font-medium text-slate-900">{order.id}</p>
+                        <p className="font-medium text-slate-900">
+                          {order.orderId}
+                        </p>
                         <p className="text-sm text-slate-600">
-                          {order.customer}
+                          {order.customer.name}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium text-slate-900">
-                          ${order.amount}
+                          ${order.total}
                         </p>
                         <Badge
                           variant={
-                            order.status === "delivered"
+                            order.status === "DELIVERED"
                               ? "success"
-                              : order.status === "pending"
+                              : order.status === "PENDING"
                               ? "warning"
                               : "danger"
                           }
@@ -299,6 +357,82 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue Chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+          >
+            <Card variant="glass">
+              <CardHeader>
+                <CardTitle>Revenue Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart
+                    data={[
+                      { name: "Jan", revenue: 4000 },
+                      { name: "Feb", revenue: 3000 },
+                      { name: "Mar", revenue: 5000 },
+                      { name: "Apr", revenue: 4500 },
+                      { name: "May", revenue: 6000 },
+                      { name: "Jun", revenue: 5500 },
+                    ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#8884d8"
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Orders Chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+          >
+            <Card variant="glass">
+              <CardHeader>
+                <CardTitle>Orders by Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={[
+                      { name: "Pending", orders: stats?.pendingOrders || 0 },
+                      {
+                        name: "Delivered",
+                        orders:
+                          (stats?.totalOrders || 0) -
+                          (stats?.pendingOrders || 0),
+                      },
+                      { name: "Refunded", orders: 0 },
+                    ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="orders" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </motion.div>

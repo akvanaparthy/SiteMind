@@ -2,12 +2,13 @@ version: "3.8"
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: sitemind-postgres
     environment:
       POSTGRES_DB: sitemind
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: sitemind123
+      POSTGRES_HOST_AUTH_METHOD: md5
     ports:
       - "5432:5432"
     volumes:

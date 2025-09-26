@@ -32,6 +32,14 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({
       maintenanceMode: siteConfig?.maintenanceMode || false,
       lastCacheClear: siteConfig?.lastCacheClear,
+      siteName: siteConfig?.siteName || "SiteMind",
+      siteDescription:
+        siteConfig?.siteDescription || "AI-Native E-Commerce Platform",
+      contactEmail: siteConfig?.contactEmail || "admin@sitemind.com",
+      aiAgentEnabled:
+        siteConfig?.aiAgentEnabled !== undefined
+          ? siteConfig.aiAgentEnabled
+          : true,
       stats: {
         totalOrders,
         totalPosts,
@@ -55,7 +63,14 @@ export async function GET(_request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { maintenanceMode, clearCache } = body;
+    const {
+      maintenanceMode,
+      clearCache,
+      siteName,
+      siteDescription,
+      contactEmail,
+      aiAgentEnabled,
+    } = body;
 
     let siteConfig = await prisma.siteConfig.findFirst({
       orderBy: { createdAt: "desc" },
@@ -66,6 +81,10 @@ export async function PATCH(request: NextRequest) {
         data: {
           maintenanceMode: maintenanceMode || false,
           lastCacheClear: clearCache ? new Date() : null,
+          siteName: siteName || "SiteMind",
+          siteDescription: siteDescription || "AI-Native E-Commerce Platform",
+          contactEmail: contactEmail || "admin@sitemind.com",
+          aiAgentEnabled: aiAgentEnabled !== undefined ? aiAgentEnabled : true,
         },
       });
     } else {
@@ -77,6 +96,17 @@ export async function PATCH(request: NextRequest) {
               ? maintenanceMode
               : siteConfig.maintenanceMode,
           lastCacheClear: clearCache ? new Date() : siteConfig.lastCacheClear,
+          siteName: siteName !== undefined ? siteName : siteConfig.siteName,
+          siteDescription:
+            siteDescription !== undefined
+              ? siteDescription
+              : siteConfig.siteDescription,
+          contactEmail:
+            contactEmail !== undefined ? contactEmail : siteConfig.contactEmail,
+          aiAgentEnabled:
+            aiAgentEnabled !== undefined
+              ? aiAgentEnabled
+              : siteConfig.aiAgentEnabled,
         },
       });
     }
@@ -84,6 +114,10 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({
       maintenanceMode: siteConfig.maintenanceMode,
       lastCacheClear: siteConfig.lastCacheClear,
+      siteName: siteConfig.siteName,
+      siteDescription: siteConfig.siteDescription,
+      contactEmail: siteConfig.contactEmail,
+      aiAgentEnabled: siteConfig.aiAgentEnabled,
       message: "Site configuration updated successfully",
     });
   } catch (error) {

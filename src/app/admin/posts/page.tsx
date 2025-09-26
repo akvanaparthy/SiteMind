@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -34,41 +34,6 @@ interface Post {
   [key: string]: unknown;
 }
 
-const mockPosts: Post[] = [
-  {
-    id: 1,
-    title: "The Future of AI in E-Commerce",
-    slug: "future-ai-ecommerce",
-    excerpt:
-      "Exploring how artificial intelligence is revolutionizing online shopping experiences...",
-    status: "PUBLISHED",
-    author: { name: "John Doe", email: "john@example.com" },
-    createdAt: "2024-01-15T10:30:00Z",
-    updatedAt: "2024-01-15T10:30:00Z",
-  },
-  {
-    id: 2,
-    title: "Building Scalable Web Applications",
-    slug: "scalable-web-apps",
-    excerpt:
-      "Best practices for creating web applications that can handle millions of users...",
-    status: "DRAFT",
-    author: { name: "Jane Smith", email: "jane@example.com" },
-    createdAt: "2024-01-14T14:20:00Z",
-    updatedAt: "2024-01-14T14:20:00Z",
-  },
-  {
-    id: 3,
-    title: "Customer Support Automation",
-    slug: "customer-support-automation",
-    excerpt: "How AI-powered chatbots are transforming customer service...",
-    status: "PUBLISHED",
-    author: { name: "AI Agent", email: "agent@sitemind.com" },
-    createdAt: "2024-01-13T09:15:00Z",
-    updatedAt: "2024-01-13T09:15:00Z",
-  },
-];
-
 const statusColors = {
   DRAFT:
     "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
@@ -78,10 +43,27 @@ const statusColors = {
 };
 
 export default function PostsPage() {
-  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch("/api/posts");
+        const data = await response.json();
+        setPosts(data.posts || []);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   const columns = [
     {
@@ -131,10 +113,60 @@ export default function PostsPage() {
     setIsCreateModalOpen(true);
   };
 
-  const handleGenerateWithAI = () => {
-    // This would trigger the AI agent to generate a blog post
-    console.log("Generating blog post with AI...");
+  const handleGenerateWithAI = async () => {
+    try {
+      const response = await fetch("/api/agent/command", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          command: "Create a blog post about AI trends in e-commerce",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("AI generated post:", data);
+        // Refresh posts list
+        const postsResponse = await fetch("/api/posts");
+        const postsData = await postsResponse.json();
+        setPosts(postsData.posts || []);
+      }
+    } catch (error) {
+      console.error("Error generating post with AI:", error);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Blog Posts
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage your blog content and create new posts
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
