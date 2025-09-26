@@ -35,16 +35,16 @@ interface Ticket {
 }
 
 const statusColors = {
-  OPEN: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200",
+  OPEN: "bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-200",
   CLOSED:
-    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
+    "bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200",
 };
 
 const priorityColors = {
-  LOW: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
+  LOW: "bg-info-100 text-info-800 dark:bg-info-900 dark:text-info-200",
   MEDIUM:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  HIGH: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200",
+    "bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200",
+  HIGH: "bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-200",
 };
 
 const priorityIcons = {
@@ -100,7 +100,7 @@ export default function TicketsPage() {
       label: "Ticket ID",
       render: (value: unknown) => (
         <div className="flex items-center space-x-2">
-          <MessageSquare className="h-4 w-4 text-gray-500" />
+          <MessageSquare className="h-4 w-4 text-secondary-500" />
           <span className="font-mono font-medium">{value as string}</span>
         </div>
       ),
@@ -119,7 +119,7 @@ export default function TicketsPage() {
         const customer = value as { name: string; email: string };
         return (
           <div className="flex items-center space-x-2">
-            <User className="h-4 w-4 text-gray-500" />
+            <User className="h-4 w-4 text-secondary-500" />
             <span>{customer.name}</span>
           </div>
         );
@@ -152,41 +152,12 @@ export default function TicketsPage() {
       label: "Created",
       render: (value: unknown) => (
         <div className="flex items-center space-x-2">
-          <Calendar className="h-4 w-4 text-gray-500" />
+          <Calendar className="h-4 w-4 text-secondary-500" />
           <span>{new Date(value as string).toLocaleDateString()}</span>
         </div>
       ),
     },
   ];
-
-  const handleCreateTicket = () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const handleAssignToAI = async () => {
-    try {
-      const response = await fetch("/api/agent/command", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          command: "Process all open support tickets",
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("AI processing tickets:", data);
-        // Refresh tickets list
-        const ticketsResponse = await fetch("/api/tickets");
-        const ticketsData = await ticketsResponse.json();
-        setTickets(ticketsData.tickets || []);
-      }
-    } catch (error) {
-      console.error("Error assigning tickets to AI:", error);
-    }
-  };
 
   const openTickets = tickets.filter((t) => t.status === "OPEN").length;
   const closedTickets = tickets.filter((t) => t.status === "CLOSED").length;
@@ -199,10 +170,10 @@ export default function TicketsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
               Support Tickets
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-secondary-600 dark:text-secondary-400">
               Manage customer support requests and tickets
             </p>
           </div>
@@ -212,9 +183,9 @@ export default function TicketsPage() {
             <Card key={i}>
               <CardContent className="p-6">
                 <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                  <div className="h-4 bg-secondary-200 dark:bg-secondary-700 rounded w-1/2 mb-2"></div>
+                  <div className="h-8 bg-secondary-200 dark:bg-secondary-700 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-secondary-200 dark:bg-secondary-700 rounded w-1/3"></div>
                 </div>
               </CardContent>
             </Card>
@@ -228,10 +199,10 @@ export default function TicketsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
             Support Tickets
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-secondary-600 dark:text-secondary-400">
             Manage customer support requests and tickets
           </p>
         </div>
@@ -258,14 +229,14 @@ export default function TicketsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <MessageSquare className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+              <div className="p-2 bg-info-100 dark:bg-info-900 rounded-lg">
+                <MessageSquare className="h-6 w-6 text-info-600 dark:text-info-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   Total Tickets
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                   {tickets.length}
                 </p>
               </div>
@@ -276,14 +247,14 @@ export default function TicketsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-rose-100 dark:bg-rose-900 rounded-lg">
-                <Clock className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+              <div className="p-2 bg-danger-100 dark:bg-danger-900 rounded-lg">
+                <Clock className="h-6 w-6 text-danger-600 dark:text-danger-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   Open Tickets
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                   {openTickets}
                 </p>
               </div>
@@ -294,14 +265,14 @@ export default function TicketsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-2 bg-success-100 dark:bg-success-900 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-success-600 dark:text-success-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   Closed Tickets
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                   {closedTickets}
                 </p>
               </div>
@@ -312,14 +283,14 @@ export default function TicketsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              <div className="p-2 bg-warning-100 dark:bg-warning-900 rounded-lg">
+                <AlertCircle className="h-6 w-6 text-warning-600 dark:text-warning-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   High Priority
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                   {highPriorityTickets}
                 </p>
               </div>
@@ -333,13 +304,13 @@ export default function TicketsPage() {
           <div className="flex items-center justify-between">
             <CardTitle>All Tickets</CardTitle>
             <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-500" />
+              <Filter className="h-4 w-4 text-secondary-500" />
               <select
                 value={statusFilter}
                 onChange={(e) =>
                   setStatusFilter(e.target.value as "all" | "OPEN" | "CLOSED")
                 }
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="px-3 py-1 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
               >
                 <option value="all">All Status</option>
                 <option value="OPEN">Open</option>
@@ -418,47 +389,49 @@ export default function TicketsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+            className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
-            <h2 className="text-xl font-bold mb-4">Create New Ticket</h2>
+            <h2 className="text-xl font-bold mb-4 text-secondary-900 dark:text-white">
+              Create New Ticket
+            </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Subject
                 </label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                   placeholder="Enter ticket subject..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Customer Email
                 </label>
                 <input
                   type="email"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                   placeholder="customer@example.com"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Priority
                 </label>
-                <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <select className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white">
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
                   <option value="HIGH">High</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Description
                 </label>
                 <textarea
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                   placeholder="Describe the issue..."
                 />
               </div>
@@ -484,10 +457,12 @@ export default function TicketsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+            className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">{selectedTicket.ticketId}</h2>
+              <h2 className="text-xl font-bold text-secondary-900 dark:text-white">
+                {selectedTicket.ticketId}
+              </h2>
               <div className="flex space-x-2">
                 <Badge className={statusColors[selectedTicket.status]}>
                   {selectedTicket.status}
@@ -500,30 +475,38 @@ export default function TicketsPage() {
 
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-2">Subject</h3>
-                <p className="text-gray-700 dark:text-gray-300">
+                <h3 className="font-semibold mb-2 text-secondary-900 dark:text-white">
+                  Subject
+                </h3>
+                <p className="text-secondary-700 dark:text-secondary-300">
                   {selectedTicket.subject}
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">Customer</h3>
-                <p className="text-gray-700 dark:text-gray-300">
+                <h3 className="font-semibold mb-2 text-secondary-900 dark:text-white">
+                  Customer
+                </h3>
+                <p className="text-secondary-700 dark:text-secondary-300">
                   {selectedTicket.customer.name} (
                   {selectedTicket.customer.email})
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">Description</h3>
-                <p className="text-gray-700 dark:text-gray-300">
+                <h3 className="font-semibold mb-2 text-secondary-900 dark:text-white">
+                  Description
+                </h3>
+                <p className="text-secondary-700 dark:text-secondary-300">
                   {selectedTicket.description}
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">Created</h3>
-                <p className="text-gray-700 dark:text-gray-300">
+                <h3 className="font-semibold mb-2 text-secondary-900 dark:text-white">
+                  Created
+                </h3>
+                <p className="text-secondary-700 dark:text-secondary-300">
                   {new Date(selectedTicket.createdAt).toLocaleString()}
                 </p>
               </div>

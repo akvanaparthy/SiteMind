@@ -137,27 +137,29 @@ export default function DashboardPage() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-600">{title}</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">
+              <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
+                {title}
+              </p>
+              <p className="text-2xl font-bold text-secondary-900 dark:text-white mt-1">
                 {title === "Revenue"
                   ? `$${value.toLocaleString()}`
                   : value.toLocaleString()}
               </p>
               <div className="flex items-center mt-2">
                 {trend === "up" ? (
-                  <TrendingUp className="h-4 w-4 text-emerald-500 mr-1" />
+                  <TrendingUp className="h-4 w-4 text-success-500 mr-1" />
                 ) : (
-                  <TrendingDown className="h-4 w-4 text-rose-500 mr-1" />
+                  <TrendingDown className="h-4 w-4 text-danger-500 mr-1" />
                 )}
                 <span
                   className={`text-sm font-medium ${
-                    trend === "up" ? "text-emerald-600" : "text-rose-600"
+                    trend === "up" ? "text-success-600" : "text-danger-600"
                   }`}
                 >
                   {change > 0 ? "+" : ""}
                   {change}%
                 </span>
-                <span className="text-sm text-slate-500 ml-1">
+                <span className="text-sm text-secondary-500 dark:text-secondary-400 ml-1">
                   vs last month
                 </span>
               </div>
@@ -173,7 +175,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
         <Navbar title="Dashboard" />
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -181,9 +183,9 @@ export default function DashboardPage() {
               <Card key={i} variant="glass">
                 <CardContent className="p-6">
                   <div className="animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                    <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                    <div className="h-4 bg-secondary-200 dark:bg-secondary-700 rounded w-1/2 mb-2"></div>
+                    <div className="h-8 bg-secondary-200 dark:bg-secondary-700 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-secondary-200 dark:bg-secondary-700 rounded w-1/3"></div>
                   </div>
                 </CardContent>
               </Card>
@@ -213,10 +215,10 @@ export default function DashboardPage() {
                     className={`w-3 h-3 rounded-full ${
                       agentStatus === "active"
                         ? "bg-emerald-500 animate-pulse"
-                        : "bg-slate-400"
+                        : "bg-secondary-400"
                     }`}
                   />
-                  <span className="font-medium text-slate-900">
+                  <span className="font-medium text-secondary-900 dark:text-white">
                     AI Agent Status:{" "}
                     {agentStatus === "active" ? "Active" : "Offline"}
                   </span>
@@ -286,18 +288,18 @@ export default function DashboardPage() {
                   {recentOrders.map((order) => (
                     <div
                       key={order.id}
-                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-secondary-800 rounded-lg"
                     >
                       <div>
-                        <p className="font-medium text-slate-900">
+                        <p className="font-medium text-secondary-900 dark:text-white">
                           {order.orderId}
                         </p>
-                        <p className="text-sm text-slate-600">
+                        <p className="text-sm text-secondary-600 dark:text-secondary-400">
                           {order.customer.name}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium text-slate-900">
+                        <p className="font-medium text-secondary-900 dark:text-white">
                           ${order.total}
                         </p>
                         <Badge
@@ -347,10 +349,10 @@ export default function DashboardPage() {
                         }`}
                       />
                       <div className="flex-1">
-                        <p className="text-sm text-slate-900">
+                        <p className="text-sm text-secondary-900 dark:text-white">
                           {activity.action}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-secondary-500 dark:text-secondary-400">
                           {activity.time}
                         </p>
                       </div>

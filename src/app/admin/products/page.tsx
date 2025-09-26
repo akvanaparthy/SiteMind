@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useToast } from "@/components/ui/Toast";
 import {
   Plus,
   Edit,
@@ -120,14 +121,33 @@ const categories = [
 ];
 
 export default function ProductsPage() {
+  const { success, error } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    description: "",
+    price: 0,
+    stock: 0,
+    category: "",
+    imageUrl: "",
+  });
+  const [editProduct, setEditProduct] = useState({
+    name: "",
+    description: "",
+    price: 0,
+    stock: 0,
+    category: "",
+    imageUrl: "",
+    isActive: true,
+  });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -174,12 +194,16 @@ export default function ProductsPage() {
                 className="w-full h-full object-cover rounded-lg"
               />
             ) : (
-              <Package className="h-5 w-5 text-gray-400" />
+              <Package className="h-5 w-5 text-secondary-400" />
             )}
           </div>
           <div>
-            <div className="font-medium text-slate-900">{String(value)}</div>
-            <div className="text-sm text-slate-500">{item.category}</div>
+            <div className="font-medium text-secondary-900 dark:text-white">
+              {String(value)}
+            </div>
+            <div className="text-sm text-secondary-500 dark:text-secondary-400">
+              {item.category}
+            </div>
           </div>
         </div>
       ),
@@ -189,7 +213,7 @@ export default function ProductsPage() {
       label: "Price",
       sortable: true,
       render: (value: unknown) => (
-        <span className="font-medium text-slate-900">
+        <span className="font-medium text-secondary-900 dark:text-white">
           {formatCurrency(Number(value))}
         </span>
       ),
@@ -240,7 +264,9 @@ export default function ProductsPage() {
       label: "Created",
       sortable: true,
       render: (value: unknown) => (
-        <span className="text-slate-600">{formatDate(String(value))}</span>
+        <span className="text-secondary-600 dark:text-secondary-400">
+          {formatDate(String(value))}
+        </span>
       ),
     },
   ];
@@ -249,9 +275,104 @@ export default function ProductsPage() {
     setIsCreateModalOpen(true);
   };
 
+  const handleSubmitCreateProduct = async () => {
+    try {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newProduct),
+      });
+
+      if (response.ok) {
+        // Refresh products list
+        const productsResponse = await fetch("/api/products");
+        const productsData = await productsResponse.json();
+        setProducts(productsData.products || []);
+
+        // Reset form and close modal
+        setNewProduct({
+          name: "",
+          description: "",
+          price: 0,
+          stock: 0,
+          category: "",
+          imageUrl: "",
+        });
+        setIsCreateModalOpen(false);
+
+        success(
+          "Product created successfully!",
+          "The new product has been added to the catalog."
+        );
+      } else {
+        console.error("Error creating product:", await response.text());
+        error(
+          "Error creating product",
+          "Please try again or check the form data."
+        );
+      }
+    } catch (err) {
+      console.error("Error creating product:", err);
+      error(
+        "Error creating product",
+        "Please try again or check the form data."
+      );
+    }
+  };
+
   const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
-    setIsViewModalOpen(true);
+    setEditProduct({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      stock: product.stock,
+      category: product.category,
+      imageUrl: product.imageUrl || "",
+      isActive: product.isActive,
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSubmitEditProduct = async () => {
+    if (!selectedProduct) return;
+
+    try {
+      const response = await fetch(`/api/products/${selectedProduct.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editProduct),
+      });
+
+      if (response.ok) {
+        // Refresh products list
+        const productsResponse = await fetch("/api/products");
+        const productsData = await productsResponse.json();
+        setProducts(productsData.products || []);
+
+        setIsEditModalOpen(false);
+        success(
+          "Product updated successfully!",
+          "The product information has been updated."
+        );
+      } else {
+        console.error("Error updating product:", await response.text());
+        error(
+          "Error updating product",
+          "Please try again or check the form data."
+        );
+      }
+    } catch (err) {
+      console.error("Error updating product:", err);
+      error(
+        "Error updating product",
+        "Please try again or check the form data."
+      );
+    }
   };
 
   const handleViewProduct = (product: Product) => {
@@ -388,10 +509,10 @@ export default function ProductsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
               Products
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-secondary-600 dark:text-secondary-400">
               Manage your product catalog and inventory
             </p>
           </div>
@@ -415,14 +536,14 @@ export default function ProductsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Total Products
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                       {totalProducts}
                     </p>
                   </div>
-                  <Package className="h-8 w-8 text-indigo-600" />
+                  <Package className="h-8 w-8 text-primary-600" />
                 </div>
               </CardContent>
             </Card>
@@ -437,8 +558,10 @@ export default function ProductsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">Active</p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
+                      Active
+                    </p>
+                    <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                       {activeProducts}
                     </p>
                   </div>
@@ -457,10 +580,10 @@ export default function ProductsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Low Stock
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                       {lowStockProducts}
                     </p>
                   </div>
@@ -479,10 +602,10 @@ export default function ProductsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Out of Stock
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                       {outOfStockProducts}
                     </p>
                   </div>
@@ -501,14 +624,14 @@ export default function ProductsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Total Value
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                       {formatCurrency(totalValue)}
                     </p>
                   </div>
-                  <DollarSign className="h-8 w-8 text-emerald-600" />
+                  <DollarSign className="h-8 w-8 text-success-600" />
                 </div>
               </CardContent>
             </Card>
@@ -521,7 +644,7 @@ export default function ProductsPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
                   <input
                     type="text"
                     placeholder="Search products..."
@@ -578,58 +701,91 @@ export default function ProductsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+            className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
-            <h2 className="text-xl font-bold mb-4">Create New Product</h2>
+            <h2 className="text-xl font-bold mb-4 text-secondary-900 dark:text-white">
+              Create New Product
+            </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Product Name
                 </label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  value={newProduct.name}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                   placeholder="Enter product name..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Description
                 </label>
                 <textarea
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  value={newProduct.description}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      description: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                   placeholder="Enter product description..."
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                     Price
                   </label>
                   <input
                     type="number"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    value={newProduct.price}
+                    onChange={(e) =>
+                      setNewProduct({
+                        ...newProduct,
+                        price: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                     placeholder="0.00"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                     Stock
                   </label>
                   <input
                     type="number"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    value={newProduct.stock}
+                    onChange={(e) =>
+                      setNewProduct({
+                        ...newProduct,
+                        stock: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                     placeholder="0"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Category
                 </label>
-                <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <select
+                  value={newProduct.category}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, category: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
+                >
                   <option value="">Select category...</option>
                   <option value="Electronics">Electronics</option>
                   <option value="Clothing">Clothing</option>
@@ -645,7 +801,7 @@ export default function ProductsPage() {
               >
                 Cancel
               </Button>
-              <Button onClick={() => setIsCreateModalOpen(false)}>
+              <Button onClick={handleSubmitCreateProduct}>
                 Create Product
               </Button>
             </div>
@@ -659,7 +815,7 @@ export default function ProductsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+            className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">{selectedProduct.name}</h2>
@@ -676,32 +832,34 @@ export default function ProductsPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                     Price
                   </label>
-                  <p className="text-slate-900 font-medium">
+                  <p className="text-secondary-900 dark:text-white font-medium">
                     {formatCurrency(selectedProduct.price)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                     Stock
                   </label>
-                  <p className="text-slate-900">{selectedProduct.stock}</p>
+                  <p className="text-secondary-900 dark:text-white">
+                    {selectedProduct.stock}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                     Created
                   </label>
-                  <p className="text-slate-900">
+                  <p className="text-secondary-900 dark:text-white">
                     {formatDate(selectedProduct.createdAt)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                     Updated
                   </label>
-                  <p className="text-slate-900">
+                  <p className="text-secondary-900 dark:text-white">
                     {formatDate(selectedProduct.updatedAt)}
                   </p>
                 </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useToast } from "@/components/ui/Toast";
 import {
   Plus,
   Edit,
@@ -32,6 +33,7 @@ interface Category {
 }
 
 export default function CategoriesPage() {
+  const { success, error } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
@@ -39,8 +41,18 @@ export default function CategoriesPage() {
   );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [newCategory, setNewCategory] = useState({
+    name: "",
+    description: "",
+  });
+  const [editCategory, setEditCategory] = useState({
+    name: "",
+    description: "",
+    isActive: true,
+  });
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -78,12 +90,16 @@ export default function CategoriesPage() {
       sortable: true,
       render: (value: unknown, item: Category) => (
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Tag className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Tag className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           </div>
           <div>
-            <div className="font-medium text-slate-900">{String(value)}</div>
-            <div className="text-sm text-slate-500">{item.slug}</div>
+            <div className="font-medium text-secondary-900 dark:text-white">
+              {String(value)}
+            </div>
+            <div className="text-sm text-secondary-500 dark:text-secondary-400">
+              {item.slug}
+            </div>
           </div>
         </div>
       ),
@@ -94,8 +110,10 @@ export default function CategoriesPage() {
       sortable: true,
       render: (value: unknown) => (
         <div className="flex items-center space-x-2">
-          <Package className="h-4 w-4 text-slate-400" />
-          <span className="font-medium text-slate-900">{Number(value)}</span>
+          <Package className="h-4 w-4 text-secondary-400" />
+          <span className="font-medium text-secondary-900 dark:text-white">
+            {Number(value)}
+          </span>
         </div>
       ),
     },
@@ -117,7 +135,9 @@ export default function CategoriesPage() {
       label: "Created",
       sortable: true,
       render: (value: unknown) => (
-        <span className="text-slate-600">{formatDate(String(value))}</span>
+        <span className="text-secondary-600 dark:text-secondary-400">
+          {formatDate(String(value))}
+        </span>
       ),
     },
   ];
@@ -126,9 +146,96 @@ export default function CategoriesPage() {
     setIsCreateModalOpen(true);
   };
 
+  const handleSubmitCreateCategory = async () => {
+    try {
+      const response = await fetch("/api/categories", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newCategory),
+      });
+
+      if (response.ok) {
+        // Refresh categories list
+        const categoriesResponse = await fetch("/api/categories");
+        const categoriesData = await categoriesResponse.json();
+        setCategories(categoriesData.categories || []);
+
+        // Reset form and close modal
+        setNewCategory({
+          name: "",
+          description: "",
+        });
+        setIsCreateModalOpen(false);
+
+        success(
+          "Category created successfully!",
+          "The new category has been added to the system."
+        );
+      } else {
+        console.error("Error creating category:", await response.text());
+        error(
+          "Error creating category",
+          "Please try again or check the form data."
+        );
+      }
+    } catch (err) {
+      console.error("Error creating category:", err);
+      error(
+        "Error creating category",
+        "Please try again or check the form data."
+      );
+    }
+  };
+
   const handleEditCategory = (category: Category) => {
     setSelectedCategory(category);
-    setIsViewModalOpen(true);
+    setEditCategory({
+      name: category.name,
+      description: category.description || "",
+      isActive: category.isActive,
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSubmitEditCategory = async () => {
+    if (!selectedCategory) return;
+
+    try {
+      const response = await fetch(`/api/categories/${selectedCategory.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editCategory),
+      });
+
+      if (response.ok) {
+        // Refresh categories list
+        const categoriesResponse = await fetch("/api/categories");
+        const categoriesData = await categoriesResponse.json();
+        setCategories(categoriesData.categories || []);
+
+        setIsEditModalOpen(false);
+        success(
+          "Category updated successfully!",
+          "The category information has been updated."
+        );
+      } else {
+        console.error("Error updating category:", await response.text());
+        error(
+          "Error updating category",
+          "Please try again or check the form data."
+        );
+      }
+    } catch (err) {
+      console.error("Error updating category:", err);
+      error(
+        "Error updating category",
+        "Please try again or check the form data."
+      );
+    }
   };
 
   const handleViewCategory = (category: Category) => {
@@ -261,10 +368,10 @@ export default function CategoriesPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
               Categories
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-secondary-600 dark:text-secondary-400">
               Organize your products into categories
             </p>
           </div>
@@ -288,14 +395,14 @@ export default function CategoriesPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Total Categories
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                       {totalCategories}
                     </p>
                   </div>
-                  <Tag className="h-8 w-8 text-indigo-600" />
+                  <Tag className="h-8 w-8 text-primary-600" />
                 </div>
               </CardContent>
             </Card>
@@ -310,10 +417,10 @@ export default function CategoriesPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Active Categories
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                       {activeCategories}
                     </p>
                   </div>
@@ -332,14 +439,14 @@ export default function CategoriesPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Total Products
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                       {totalProducts}
                     </p>
                   </div>
-                  <Package className="h-8 w-8 text-emerald-600" />
+                  <Package className="h-8 w-8 text-success-600" />
                 </div>
               </CardContent>
             </Card>
@@ -352,7 +459,7 @@ export default function CategoriesPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
                   <input
                     type="text"
                     placeholder="Search categories..."
@@ -398,27 +505,40 @@ export default function CategoriesPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+            className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
-            <h2 className="text-xl font-bold mb-4">Create New Category</h2>
+            <h2 className="text-xl font-bold mb-4 text-secondary-900 dark:text-white">
+              Create New Category
+            </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Category Name
                 </label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  value={newCategory.name}
+                  onChange={(e) =>
+                    setNewCategory({ ...newCategory, name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                   placeholder="Enter category name..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Description
                 </label>
                 <textarea
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  value={newCategory.description}
+                  onChange={(e) =>
+                    setNewCategory({
+                      ...newCategory,
+                      description: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                   placeholder="Enter category description..."
                 />
               </div>
@@ -430,7 +550,7 @@ export default function CategoriesPage() {
               >
                 Cancel
               </Button>
-              <Button onClick={() => setIsCreateModalOpen(false)}>
+              <Button onClick={handleSubmitCreateCategory}>
                 Create Category
               </Button>
             </div>
@@ -444,7 +564,7 @@ export default function CategoriesPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+            className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">{selectedCategory.name}</h2>
@@ -463,32 +583,34 @@ export default function CategoriesPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                     Slug
                   </label>
-                  <p className="text-slate-900">{selectedCategory.slug}</p>
+                  <p className="text-secondary-900 dark:text-white">
+                    {selectedCategory.slug}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                     Products
                   </label>
-                  <p className="text-slate-900">
+                  <p className="text-secondary-900 dark:text-white">
                     {selectedCategory.productCount}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                     Created
                   </label>
-                  <p className="text-slate-900">
+                  <p className="text-secondary-900 dark:text-white">
                     {formatDate(selectedCategory.createdAt)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                     Updated
                   </label>
-                  <p className="text-slate-900">
+                  <p className="text-secondary-900 dark:text-white">
                     {formatDate(selectedCategory.updatedAt)}
                   </p>
                 </div>
@@ -496,7 +618,7 @@ export default function CategoriesPage() {
 
               {selectedCategory.description && (
                 <div>
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                     Description
                   </label>
                   <p className="text-slate-900 mt-1">

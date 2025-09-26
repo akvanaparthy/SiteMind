@@ -73,10 +73,10 @@ export function RichTextEditor({
 
   return (
     <div
-      className={`border border-gray-300 dark:border-gray-600 rounded-lg ${className}`}
+      className={`border border-secondary-300 dark:border-secondary-600 rounded-lg ${className}`}
     >
       {/* Toolbar */}
-      <div className="flex items-center gap-1 p-2 border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 rounded-t-lg">
+      <div className="flex items-center gap-1 p-2 border-b border-secondary-300 dark:border-secondary-600 bg-secondary-50 dark:bg-secondary-800 rounded-t-lg">
         <div className="flex items-center gap-1">
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleBold().run()}
@@ -103,7 +103,7 @@ export function RichTextEditor({
           </ToolbarButton>
         </div>
 
-        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2" />
+        <div className="w-px h-6 bg-secondary-300 dark:bg-secondary-600 mx-2" />
 
         <div className="flex items-center gap-1">
           <ToolbarButton
@@ -137,7 +137,7 @@ export function RichTextEditor({
           </ToolbarButton>
         </div>
 
-        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2" />
+        <div className="w-px h-6 bg-secondary-300 dark:bg-secondary-600 mx-2" />
 
         <div className="flex items-center gap-1">
           <ToolbarButton
@@ -165,7 +165,7 @@ export function RichTextEditor({
           </ToolbarButton>
         </div>
 
-        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2" />
+        <div className="w-px h-6 bg-secondary-300 dark:bg-secondary-600 mx-2" />
 
         <div className="flex items-center gap-1">
           <ToolbarButton

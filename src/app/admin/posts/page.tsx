@@ -36,10 +36,11 @@ interface Post {
 
 const statusColors = {
   DRAFT:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+    "bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200",
   PUBLISHED:
-    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
-  TRASHED: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200",
+    "bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200",
+  TRASHED:
+    "bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-200",
 };
 
 export default function PostsPage() {
@@ -76,7 +77,7 @@ export default function PostsPage() {
       label: "Title",
       render: (value: unknown) => (
         <div className="flex items-center space-x-2">
-          <FileText className="h-4 w-4 text-gray-500" />
+          <FileText className="h-4 w-4 text-secondary-500" />
           <span className="font-medium">{value as string}</span>
         </div>
       ),
@@ -88,7 +89,7 @@ export default function PostsPage() {
         const author = value as { name: string; email: string };
         return (
           <div className="flex items-center space-x-2">
-            <User className="h-4 w-4 text-gray-500" />
+            <User className="h-4 w-4 text-secondary-500" />
             <span>{author.name}</span>
           </div>
         );
@@ -107,7 +108,7 @@ export default function PostsPage() {
       label: "Created",
       render: (value: unknown) => (
         <div className="flex items-center space-x-2">
-          <Calendar className="h-4 w-4 text-gray-500" />
+          <Calendar className="h-4 w-4 text-secondary-500" />
           <span>{new Date(value as string).toLocaleDateString()}</span>
         </div>
       ),
@@ -174,10 +175,10 @@ export default function PostsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
               Blog Posts
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-secondary-600 dark:text-secondary-400">
               Manage your blog content and create new posts
             </p>
           </div>
@@ -187,9 +188,9 @@ export default function PostsPage() {
             <Card key={i}>
               <CardContent className="p-6">
                 <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                  <div className="h-4 bg-secondary-200 dark:bg-secondary-700 rounded w-1/2 mb-2"></div>
+                  <div className="h-8 bg-secondary-200 dark:bg-secondary-700 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-secondary-200 dark:bg-secondary-700 rounded w-1/3"></div>
                 </div>
               </CardContent>
             </Card>
@@ -203,10 +204,10 @@ export default function PostsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
             Blog Posts
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-secondary-600 dark:text-secondary-400">
             Manage your blog content and create new posts
           </p>
         </div>
@@ -233,14 +234,14 @@ export default function PostsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <FileText className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+              <div className="p-2 bg-info-100 dark:bg-info-900 rounded-lg">
+                <FileText className="h-6 w-6 text-info-600 dark:text-info-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   Total Posts
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                   {posts.length}
                 </p>
               </div>
@@ -251,14 +252,14 @@ export default function PostsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
-                <Eye className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-2 bg-success-100 dark:bg-success-900 rounded-lg">
+                <Eye className="h-6 w-6 text-success-600 dark:text-success-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   Published
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                   {posts.filter((p) => p.status === "PUBLISHED").length}
                 </p>
               </div>
@@ -269,14 +270,14 @@ export default function PostsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                <FileText className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              <div className="p-2 bg-warning-100 dark:bg-warning-900 rounded-lg">
+                <FileText className="h-6 w-6 text-warning-600 dark:text-warning-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   Drafts
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                   {posts.filter((p) => p.status === "DRAFT").length}
                 </p>
               </div>
@@ -386,35 +387,39 @@ export default function PostsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+            className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
-            <h2 className="text-xl font-bold mb-4">Create New Post</h2>
+            <h2 className="text-xl font-bold mb-4 text-secondary-900 dark:text-white">
+              Create New Post
+            </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Title</label>
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
+                  Title
+                </label>
                 <input
                   type="text"
                   value={newPost.title}
                   onChange={(e) =>
                     setNewPost({ ...newPost, title: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                   placeholder="Enter post title..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Content
                 </label>
                 <RichTextEditor
-                  value={newPost.content}
+                  content={newPost.content}
                   onChange={(content) => setNewPost({ ...newPost, content })}
                   placeholder="Write your post content..."
                   className="min-h-[200px]"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Excerpt
                 </label>
                 <textarea
@@ -423,7 +428,7 @@ export default function PostsPage() {
                   onChange={(e) =>
                     setNewPost({ ...newPost, excerpt: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                   placeholder="Brief description of the post..."
                 />
               </div>
@@ -479,20 +484,24 @@ export default function PostsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+            className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
-            <h2 className="text-xl font-bold mb-4">Edit Post</h2>
+            <h2 className="text-xl font-bold mb-4 text-secondary-900 dark:text-white">
+              Edit Post
+            </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Title</label>
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
+                  Title
+                </label>
                 <input
                   type="text"
                   defaultValue={selectedPost.title}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
                   Content
                 </label>
                 <RichTextEditor
@@ -502,10 +511,12 @@ export default function PostsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Status</label>
+                <label className="block text-sm font-medium mb-2 text-secondary-900 dark:text-white">
+                  Status
+                </label>
                 <select
                   defaultValue={selectedPost.status}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
                 >
                   <option value="DRAFT">Draft</option>
                   <option value="PUBLISHED">Published</option>

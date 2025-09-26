@@ -200,10 +200,10 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
             Site Settings
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-secondary-600 dark:text-secondary-400">
             Manage your site configuration and preferences
           </p>
         </div>
@@ -227,23 +227,23 @@ export default function SettingsPage() {
               <div
                 className={`p-2 rounded-lg ${
                   config.maintenanceMode
-                    ? "bg-rose-100 dark:bg-rose-900"
-                    : "bg-emerald-100 dark:bg-emerald-900"
+                    ? "bg-danger-100 dark:bg-danger-900"
+                    : "bg-success-100 dark:bg-success-900"
                 }`}
               >
                 <Globe
                   className={`h-6 w-6 ${
                     config.maintenanceMode
-                      ? "text-rose-600 dark:text-rose-400"
-                      : "text-emerald-600 dark:text-emerald-400"
+                      ? "text-danger-600 dark:text-danger-400"
+                      : "text-success-600 dark:text-success-400"
                   }`}
                 />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   Site Status
                 </p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                <p className="text-lg font-bold text-secondary-900 dark:text-white">
                   {config.maintenanceMode ? "Maintenance" : "Live"}
                 </p>
               </div>
@@ -257,23 +257,23 @@ export default function SettingsPage() {
               <div
                 className={`p-2 rounded-lg ${
                   config.aiAgentEnabled
-                    ? "bg-blue-100 dark:bg-blue-900"
-                    : "bg-gray-100 dark:bg-gray-900"
+                    ? "bg-info-100 dark:bg-info-900"
+                    : "bg-secondary-100 dark:bg-secondary-900"
                 }`}
               >
                 <Bot
                   className={`h-6 w-6 ${
                     config.aiAgentEnabled
-                      ? "text-indigo-600 dark:text-indigo-400"
-                      : "text-gray-600 dark:text-gray-400"
+                      ? "text-primary-600 dark:text-primary-400"
+                      : "text-secondary-600 dark:text-secondary-400"
                   }`}
                 />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   AI Agent
                 </p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                <p className="text-lg font-bold text-secondary-900 dark:text-white">
                   {config.aiAgentEnabled ? "Active" : "Inactive"}
                 </p>
               </div>
@@ -287,23 +287,23 @@ export default function SettingsPage() {
               <div
                 className={`p-2 rounded-lg ${
                   config.cacheEnabled
-                    ? "bg-emerald-100 dark:bg-emerald-900"
-                    : "bg-gray-100 dark:bg-gray-900"
+                    ? "bg-success-100 dark:bg-success-900"
+                    : "bg-secondary-100 dark:bg-secondary-900"
                 }`}
               >
                 <Database
                   className={`h-6 w-6 ${
                     config.cacheEnabled
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-gray-600 dark:text-gray-400"
+                      ? "text-success-600 dark:text-success-400"
+                      : "text-secondary-600 dark:text-secondary-400"
                   }`}
                 />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   Cache
                 </p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                <p className="text-lg font-bold text-secondary-900 dark:text-white">
                   {config.cacheEnabled ? "Enabled" : "Disabled"}
                 </p>
               </div>
@@ -314,14 +314,14 @@ export default function SettingsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Clock className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+              <div className="p-2 bg-info-100 dark:bg-info-900 rounded-lg">
+                <Clock className="h-6 w-6 text-info-600 dark:text-info-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                   Last Cache Clear
                 </p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">
+                <p className="text-sm font-bold text-secondary-900 dark:text-white">
                   {config.lastCacheClear
                     ? new Date(config.lastCacheClear).toLocaleDateString()
                     : "Never"}
@@ -352,7 +352,7 @@ export default function SettingsPage() {
                 onChange={(e) =>
                   setConfig((prev) => ({ ...prev, siteName: e.target.value }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
               />
             </div>
             <div>
@@ -368,7 +368,7 @@ export default function SettingsPage() {
                     contactEmail: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
               />
             </div>
           </div>
@@ -386,7 +386,7 @@ export default function SettingsPage() {
                   siteDescription: e.target.value,
                 }))
               }
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
             />
           </div>
 
@@ -404,7 +404,7 @@ export default function SettingsPage() {
                     maxUploadSize: parseInt(e.target.value),
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
               />
             </div>
             <div>
@@ -420,7 +420,7 @@ export default function SettingsPage() {
                     cacheTTL: parseInt(e.target.value),
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-secondary-300 dark:border-secondary-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-700 dark:text-white text-secondary-900 dark:text-white"
               />
             </div>
           </div>
@@ -436,19 +436,21 @@ export default function SettingsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-secondary-200 dark:border-secondary-700 rounded-lg">
             <div className="flex items-center space-x-3">
-              <Globe className="h-5 w-5 text-gray-500" />
+              <Globe className="h-5 w-5 text-secondary-500" />
               <div>
-                <h3 className="font-medium">Maintenance Mode</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <h3 className="font-medium text-secondary-900 dark:text-white">
+                  Maintenance Mode
+                </h3>
+                <p className="text-sm text-secondary-600 dark:text-secondary-400">
                   Put the site in maintenance mode
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               {config.maintenanceMode && (
-                <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200">
+                <Badge className="bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-200">
                   <AlertTriangle className="h-3 w-3 mr-1" />
                   Active
                 </Badge>
@@ -469,19 +471,21 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-secondary-200 dark:border-secondary-700 rounded-lg">
             <div className="flex items-center space-x-3">
-              <Bot className="h-5 w-5 text-gray-500" />
+              <Bot className="h-5 w-5 text-secondary-500" />
               <div>
-                <h3 className="font-medium">AI Agent</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <h3 className="font-medium text-secondary-900 dark:text-white">
+                  AI Agent
+                </h3>
+                <p className="text-sm text-secondary-600 dark:text-secondary-400">
                   Enable AI agent functionality
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               {config.aiAgentEnabled && (
-                <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+                <Badge className="bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   Active
                 </Badge>
@@ -502,12 +506,14 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-secondary-200 dark:border-secondary-700 rounded-lg">
             <div className="flex items-center space-x-3">
-              <Database className="h-5 w-5 text-gray-500" />
+              <Database className="h-5 w-5 text-secondary-500" />
               <div>
-                <h3 className="font-medium">Cache System</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <h3 className="font-medium text-secondary-900 dark:text-white">
+                  Cache System
+                </h3>
+                <p className="text-sm text-secondary-600 dark:text-secondary-400">
                   Enable caching for better performance
                 </p>
               </div>
@@ -525,17 +531,19 @@ export default function SettingsPage() {
                   }
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-secondary-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-secondary-600 peer-checked:bg-primary-600"></div>
               </label>
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-secondary-200 dark:border-secondary-700 rounded-lg">
             <div className="flex items-center space-x-3">
-              <Key className="h-5 w-5 text-gray-500" />
+              <Key className="h-5 w-5 text-secondary-500" />
               <div>
-                <h3 className="font-medium">User Registration</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <h3 className="font-medium text-secondary-900 dark:text-white">
+                  User Registration
+                </h3>
+                <p className="text-sm text-secondary-600 dark:text-secondary-400">
                   Allow new users to register
                 </p>
               </div>
@@ -553,17 +561,19 @@ export default function SettingsPage() {
                   }
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-secondary-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-secondary-600 peer-checked:bg-primary-600"></div>
               </label>
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-secondary-200 dark:border-secondary-700 rounded-lg">
             <div className="flex items-center space-x-3">
-              <Bell className="h-5 w-5 text-gray-500" />
+              <Bell className="h-5 w-5 text-secondary-500" />
               <div>
-                <h3 className="font-medium">Comments</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <h3 className="font-medium text-secondary-900 dark:text-white">
+                  Comments
+                </h3>
+                <p className="text-sm text-secondary-600 dark:text-secondary-400">
                   Enable comments on blog posts
                 </p>
               </div>
@@ -581,7 +591,7 @@ export default function SettingsPage() {
                   }
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-secondary-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-secondary-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-secondary-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-secondary-600 peer-checked:bg-primary-600"></div>
               </label>
             </div>
           </div>

@@ -96,7 +96,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id: _id } = await params;
 
     // For now, return a mock response since we don't have a Category model
     return NextResponse.json({ message: "Category deleted successfully" });

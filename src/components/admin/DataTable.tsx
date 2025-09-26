@@ -84,7 +84,7 @@ export function DataTable<T extends Record<string, unknown>>({
   return (
     <div
       className={cn(
-        "bg-white rounded-xl shadow-sm border border-slate-200",
+        "bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-slate-200 dark:border-secondary-700",
         className
       )}
     >
@@ -94,13 +94,13 @@ export function DataTable<T extends Record<string, unknown>>({
           <div className="flex items-center space-x-4">
             {searchable && (
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-secondary-500" />
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-64 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-2 w-64 bg-slate-50 dark:bg-secondary-800 border border-slate-200 dark:border-secondary-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-secondary-900 dark:text-white"
                 />
               </div>
             )}
@@ -111,7 +111,7 @@ export function DataTable<T extends Record<string, unknown>>({
               </Button>
             )}
           </div>
-          <div className="text-sm text-slate-600">
+          <div className="text-sm text-slate-600 dark:text-secondary-400">
             {filteredData.length} of {data.length} items
           </div>
         </div>
@@ -120,7 +120,7 @@ export function DataTable<T extends Record<string, unknown>>({
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-slate-50">
+          <thead className="bg-slate-50 dark:bg-secondary-700">
             <tr>
               <th className="px-6 py-3 text-left">
                 <input
@@ -135,12 +135,12 @@ export function DataTable<T extends Record<string, unknown>>({
               {columns.map((column) => (
                 <th
                   key={String(column.key)}
-                  className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-secondary-400 uppercase tracking-wider"
                 >
                   <button
                     onClick={() => column.sortable && handleSort(column.key)}
                     className={cn(
-                      "flex items-center space-x-1 hover:text-slate-700",
+                      "flex items-center space-x-1 hover:text-slate-700 dark:hover:text-secondary-200",
                       column.sortable && "cursor-pointer"
                     )}
                   >
@@ -159,13 +159,13 @@ export function DataTable<T extends Record<string, unknown>>({
                 </th>
               ))}
               {actions && (
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-secondary-400 uppercase tracking-wider">
                   Actions
                 </th>
               )}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-slate-200">
+          <tbody className="bg-white dark:bg-secondary-800 divide-y divide-slate-200 dark:divide-secondary-700">
             {sortedData.map((item, index) => (
               <motion.tr
                 key={String(item.id)}
@@ -173,7 +173,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: index * 0.05 }}
                 className={cn(
-                  "hover:bg-slate-50 transition-colors",
+                  "hover:bg-slate-50 dark:hover:bg-secondary-700 transition-colors",
                   onRowClick && "cursor-pointer"
                 )}
                 onClick={() => onRowClick?.(item)}
@@ -183,14 +183,14 @@ export function DataTable<T extends Record<string, unknown>>({
                     type="checkbox"
                     checked={selectedItems.has(String(item.id))}
                     onChange={() => handleSelectItem(String(item.id))}
-                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="rounded border-secondary-300 dark:border-secondary-600 text-primary-600 dark:text-primary-400 focus:ring-primary-500"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </td>
                 {columns.map((column) => (
                   <td
                     key={String(column.key)}
-                    className="px-6 py-4 whitespace-nowrap text-sm"
+                    className="px-6 py-4 whitespace-nowrap text-sm text-secondary-900 dark:text-white"
                   >
                     {column.render
                       ? column.render(item[column.key], item)
@@ -213,13 +213,13 @@ export function DataTable<T extends Record<string, unknown>>({
       {/* Empty State */}
       {sortedData.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-slate-400 mb-4">
+          <div className="text-slate-400 dark:text-secondary-500 mb-4">
             <Search className="h-12 w-12 mx-auto" />
           </div>
-          <h3 className="text-lg font-medium text-slate-900 mb-2">
+          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
             No items found
           </h3>
-          <p className="text-slate-600">
+          <p className="text-slate-600 dark:text-secondary-400">
             {searchTerm
               ? "Try adjusting your search terms."
               : "No data available."}

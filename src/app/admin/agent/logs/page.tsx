@@ -230,7 +230,7 @@ export default function AgentLogsPage() {
   const stats = getStatusStats();
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Navbar title="Agent Action Logs" />
 
       <div className="p-6 space-y-6">
@@ -245,14 +245,14 @@ export default function AgentLogsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Total Tasks
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-secondary-900 dark:text-white">
                       {stats.total}
                     </p>
                   </div>
-                  <Activity className="h-8 w-8 text-indigo-600" />
+                  <Activity className="h-8 w-8 text-primary-600 dark:text-primary-400" />
                 </div>
               </CardContent>
             </Card>
@@ -267,14 +267,14 @@ export default function AgentLogsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Successful
                     </p>
-                    <p className="text-2xl font-bold text-emerald-600">
+                    <p className="text-2xl font-bold text-success-600 dark:text-success-400">
                       {stats.success}
                     </p>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-emerald-600" />
+                  <CheckCircle className="h-8 w-8 text-success-600 dark:text-success-400" />
                 </div>
               </CardContent>
             </Card>
@@ -289,12 +289,14 @@ export default function AgentLogsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">Failed</p>
-                    <p className="text-2xl font-bold text-rose-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
+                      Failed
+                    </p>
+                    <p className="text-2xl font-bold text-danger-600 dark:text-danger-400">
                       {stats.failed}
                     </p>
                   </div>
-                  <XCircle className="h-8 w-8 text-rose-600" />
+                  <XCircle className="h-8 w-8 text-danger-600 dark:text-danger-400" />
                 </div>
               </CardContent>
             </Card>
@@ -309,14 +311,14 @@ export default function AgentLogsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       Pending
                     </p>
-                    <p className="text-2xl font-bold text-yellow-600">
+                    <p className="text-2xl font-bold text-warning-600 dark:text-warning-400">
                       {stats.pending}
                     </p>
                   </div>
-                  <Clock className="h-8 w-8 text-yellow-600" />
+                  <Clock className="h-8 w-8 text-warning-600 dark:text-warning-400" />
                 </div>
               </CardContent>
             </Card>
@@ -335,19 +337,19 @@ export default function AgentLogsPage() {
                 <div className="flex flex-col sm:flex-row gap-4 flex-1">
                   {/* Search */}
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
                     <input
                       type="text"
                       placeholder="Search tasks..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 w-64 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="pl-10 pr-4 py-2 w-64 bg-slate-50 dark:bg-secondary-800 border border-slate-200 dark:border-secondary-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-secondary-900 dark:text-white"
                     />
                   </div>
 
                   {/* Filter */}
                   <div className="flex items-center space-x-2">
-                    <Filter className="h-4 w-4 text-slate-600" />
+                    <Filter className="h-4 w-4 text-secondary-600" />
                     <select
                       value={filter}
                       onChange={(e) =>
@@ -359,7 +361,7 @@ export default function AgentLogsPage() {
                             | "PENDING"
                         )
                       }
-                      className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="px-3 py-2 bg-slate-50 dark:bg-secondary-800 border border-slate-200 dark:border-secondary-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-secondary-900 dark:text-white"
                     >
                       <option value="all">All Status</option>
                       <option value="SUCCESS">Success</option>
@@ -400,11 +402,11 @@ export default function AgentLogsPage() {
           {filteredLogs.length === 0 ? (
             <Card variant="glass">
               <CardContent className="p-12 text-center">
-                <Bot className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-2">
+                <Bot className="h-12 w-12 text-secondary-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-secondary-900 dark:text-white mb-2">
                   No logs found
                 </h3>
-                <p className="text-slate-600">
+                <p className="text-secondary-600 dark:text-secondary-400">
                   {searchTerm || filter !== "all"
                     ? "Try adjusting your search or filter criteria."
                     : "No agent activity logs available yet."}

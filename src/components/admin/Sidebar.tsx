@@ -137,8 +137,8 @@ export function Sidebar({ className }: SidebarProps) {
             className={cn(
               "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full",
               active
-                ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200",
+                ? "bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-200"
+                : "text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900 dark:text-secondary-400 dark:hover:bg-secondary-800 dark:hover:text-secondary-200",
               level > 0 && "ml-6",
               isCollapsed && "justify-center px-2"
             )}
@@ -194,12 +194,12 @@ export function Sidebar({ className }: SidebarProps) {
       initial={false}
       animate={{ width: isCollapsed ? 80 : 280 }}
       className={cn(
-        "bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex flex-col h-full",
+        "bg-white dark:bg-secondary-900 border-r border-secondary-200 dark:border-secondary-700 flex flex-col h-full",
         className
       )}
     >
       {/* Header */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+      <div className="p-4 border-b border-secondary-200 dark:border-secondary-700">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <Link
@@ -209,7 +209,7 @@ export function Sidebar({ className }: SidebarProps) {
               <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <Bot className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-slate-900 dark:text-white">
+              <span className="text-xl font-bold text-secondary-900 dark:text-white">
                 SiteMind
               </span>
             </Link>
@@ -237,12 +237,12 @@ export function Sidebar({ className }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-slate-200 dark:border-slate-700">
+      <div className="p-4 border-t border-secondary-200 dark:border-secondary-700">
         <Link
           href="/"
           className={cn(
             "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-            "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200",
+            "text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900 dark:text-secondary-400 dark:hover:bg-secondary-800 dark:hover:text-secondary-200",
             isCollapsed && "justify-center px-2"
           )}
         >

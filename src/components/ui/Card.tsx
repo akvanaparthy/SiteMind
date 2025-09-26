@@ -18,9 +18,12 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     const baseClasses = "rounded-xl transition-all duration-300";
 
     const variants = {
-      default: "bg-white border border-slate-200 shadow-sm",
-      glass: "bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg",
-      elevated: "bg-white border border-slate-200 shadow-lg hover:shadow-xl",
+      default:
+        "bg-white dark:bg-secondary-800 border border-slate-200 dark:border-secondary-700 shadow-sm",
+      glass:
+        "bg-white/80 dark:bg-secondary-800/80 backdrop-blur-sm border border-white/20 dark:border-secondary-700/20 shadow-lg",
+      elevated:
+        "bg-white dark:bg-secondary-800 border border-slate-200 dark:border-secondary-700 shadow-lg hover:shadow-xl",
     };
 
     const hoverClasses = hover ? "hover:shadow-lg hover:-translate-y-1" : "";
@@ -60,7 +63,7 @@ const CardTitle = forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
+      "text-lg font-semibold leading-none tracking-tight text-secondary-900 dark:text-white",
       className
     )}
     {...props}
@@ -72,7 +75,11 @@ const CardDescription = forwardRef<
   HTMLParagraphElement,
   HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-sm text-slate-600", className)} {...props} />
+  <p
+    ref={ref}
+    className={cn("text-sm text-slate-600 dark:text-secondary-400", className)}
+    {...props}
+  />
 ));
 CardDescription.displayName = "CardDescription";
 

@@ -19,11 +19,15 @@ const Badge = forwardRef<HTMLDivElement, BadgeProps>(
       "inline-flex items-center rounded-full font-medium transition-colors";
 
     const variants = {
-      default: "bg-slate-100 text-slate-800",
-      success: "bg-emerald-100 text-emerald-800",
-      warning: "bg-yellow-100 text-yellow-800",
-      danger: "bg-rose-100 text-rose-800",
-      info: "bg-blue-100 text-blue-800",
+      default:
+        "bg-secondary-100 text-secondary-800 dark:bg-secondary-800 dark:text-secondary-100",
+      success:
+        "bg-success-100 text-success-800 dark:bg-success-800 dark:text-success-100",
+      warning:
+        "bg-warning-100 text-warning-800 dark:bg-warning-800 dark:text-warning-100",
+      danger:
+        "bg-danger-100 text-danger-800 dark:bg-danger-800 dark:text-danger-100",
+      info: "bg-info-100 text-info-800 dark:bg-info-800 dark:text-info-100",
     };
 
     const sizes = {

@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     // Get agent status
     const agentUrl = process.env.AGENT_URL || "http://localhost:3001";

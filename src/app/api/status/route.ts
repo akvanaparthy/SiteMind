@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     // Get site configuration
     const siteConfig = await prisma.siteConfig.findFirst({
