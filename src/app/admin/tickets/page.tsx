@@ -1,0 +1,518 @@
+"use client";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { DataTable } from "@/components/admin/DataTable";
+import {
+  Plus,
+  MessageSquare,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  User,
+  Calendar,
+  Filter,
+  Bot,
+} from "lucide-react";
+
+interface Ticket {
+  id: number;
+  ticketId: string;
+  subject: string;
+  description: string;
+  status: "OPEN" | "CLOSED";
+  priority: "LOW" | "MEDIUM" | "HIGH";
+  customer: {
+    name: string;
+    email: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+}
+
+const mockTickets: Ticket[] = [
+  {
+    id: 1,
+    ticketId: "TKT-001",
+    subject: "Order not delivered",
+    description:
+      "I placed an order 5 days ago but haven't received it yet. Can you please check the status?",
+    status: "OPEN",
+    priority: "HIGH",
+    customer: { name: "John Smith", email: "john@example.com" },
+    createdAt: "2024-01-15T10:30:00Z",
+    updatedAt: "2024-01-15T10:30:00Z",
+  },
+  {
+    id: 2,
+    ticketId: "TKT-002",
+    subject: "Product quality issue",
+    description:
+      "The product I received has some quality issues. Can I get a replacement?",
+    status: "OPEN",
+    priority: "MEDIUM",
+    customer: { name: "Sarah Johnson", email: "sarah@example.com" },
+    createdAt: "2024-01-14T14:20:00Z",
+    updatedAt: "2024-01-14T14:20:00Z",
+  },
+  {
+    id: 3,
+    ticketId: "TKT-003",
+    subject: "Account access problem",
+    description:
+      "I can't log into my account. It says my password is incorrect but I'm sure it's right.",
+    status: "CLOSED",
+    priority: "LOW",
+    customer: { name: "Mike Davis", email: "mike@example.com" },
+    createdAt: "2024-01-13T09:15:00Z",
+    updatedAt: "2024-01-13T16:45:00Z",
+  },
+];
+
+const statusColors = {
+  OPEN: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  CLOSED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+};
+
+const priorityColors = {
+  LOW: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  MEDIUM:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  HIGH: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+};
+
+const priorityIcons = {
+  LOW: Clock,
+  MEDIUM: AlertCircle,
+  HIGH: AlertCircle,
+};
+
+export default function TicketsPage() {
+  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | "OPEN" | "CLOSED">(
+    "all"
+  );
+
+  const filteredTickets = tickets.filter(
+    (ticket) => statusFilter === "all" || ticket.status === statusFilter
+  );
+
+  const columns = [
+    {
+      key: "ticketId",
+      label: "Ticket ID",
+      render: (value: unknown) => (
+        <div className="flex items-center space-x-2">
+          <MessageSquare className="h-4 w-4 text-gray-500" />
+          <span className="font-mono font-medium">{value as string}</span>
+        </div>
+      ),
+    },
+    {
+      key: "subject",
+      label: "Subject",
+      render: (value: unknown) => (
+        <span className="font-medium">{value as string}</span>
+      ),
+    },
+    {
+      key: "customer",
+      label: "Customer",
+      render: (value: unknown) => {
+        const customer = value as { name: string; email: string };
+        return (
+          <div className="flex items-center space-x-2">
+            <User className="h-4 w-4 text-gray-500" />
+            <span>{customer.name}</span>
+          </div>
+        );
+      },
+    },
+    {
+      key: "priority",
+      label: "Priority",
+      render: (value: unknown) => {
+        const priority = value as keyof typeof priorityColors;
+        const Icon = priorityIcons[priority];
+        return (
+          <Badge className={priorityColors[priority]}>
+            <Icon className="h-3 w-3 mr-1" />
+            {priority}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (value: unknown) => {
+        const status = value as keyof typeof statusColors;
+        return <Badge className={statusColors[status]}>{status}</Badge>;
+      },
+    },
+    {
+      key: "createdAt",
+      label: "Created",
+      render: (value: unknown) => (
+        <div className="flex items-center space-x-2">
+          <Calendar className="h-4 w-4 text-gray-500" />
+          <span>{new Date(value as string).toLocaleDateString()}</span>
+        </div>
+      ),
+    },
+  ];
+
+  const actions = [
+    {
+      label: "View",
+      icon: MessageSquare,
+      onClick: (ticket: Ticket) => {
+        setSelectedTicket(ticket);
+        setIsViewModalOpen(true);
+      },
+    },
+    {
+      label: (ticket: Ticket) =>
+        ticket.status === "OPEN" ? "Close" : "Reopen",
+      icon: (ticket: Ticket) =>
+        ticket.status === "OPEN" ? CheckCircle : Clock,
+      onClick: (ticket: Ticket) => {
+        setTickets((prev) =>
+          prev.map((t) =>
+            t.id === ticket.id
+              ? { ...t, status: t.status === "OPEN" ? "CLOSED" : "OPEN" }
+              : t
+          )
+        );
+      },
+    },
+  ];
+
+  const handleCreateTicket = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleAssignToAI = () => {
+    // This would trigger the AI agent to handle the ticket
+    console.log("Assigning ticket to AI agent...");
+  };
+
+  const openTickets = tickets.filter((t) => t.status === "OPEN").length;
+  const closedTickets = tickets.filter((t) => t.status === "CLOSED").length;
+  const highPriorityTickets = tickets.filter(
+    (t) => t.priority === "HIGH" && t.status === "OPEN"
+  ).length;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Support Tickets
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage customer support requests and tickets
+          </p>
+        </div>
+        <div className="flex space-x-3">
+          <Button
+            variant="secondary"
+            onClick={handleAssignToAI}
+            className="flex items-center space-x-2"
+          >
+            <Bot className="h-4 w-4" />
+            <span>Assign to AI</span>
+          </Button>
+          <Button
+            onClick={handleCreateTicket}
+            className="flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Ticket</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <MessageSquare className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Total Tickets
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {tickets.length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
+                <Clock className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Open Tickets
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {openTickets}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Closed Tickets
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {closedTickets}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                <AlertCircle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  High Priority
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {highPriorityTickets}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Tickets</CardTitle>
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <select
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(e.target.value as "all" | "OPEN" | "CLOSED")
+                }
+                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="all">All Status</option>
+                <option value="OPEN">Open</option>
+                <option value="CLOSED">Closed</option>
+              </select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            data={filteredTickets}
+            columns={columns}
+            actions={(ticket) => (
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedTicket(ticket);
+                    setIsViewModalOpen(true);
+                  }}
+                  className="h-8 w-8 p-0"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setTickets((prev) =>
+                      prev.map((t) =>
+                        t.id === ticket.id
+                          ? {
+                              ...t,
+                              status: t.status === "OPEN" ? "CLOSED" : "OPEN",
+                            }
+                          : t
+                      )
+                    );
+                  }}
+                  className="h-8 w-8 p-0"
+                >
+                  {ticket.status === "OPEN" ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    <Clock className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            )}
+            onRowClick={(ticket: Ticket) => {
+              setSelectedTicket(ticket);
+              setIsViewModalOpen(true);
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Create Ticket Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+          >
+            <h2 className="text-xl font-bold mb-4">Create New Ticket</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter ticket subject..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Customer Email
+                </label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="customer@example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Priority
+                </label>
+                <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Description
+                </label>
+                <textarea
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Describe the issue..."
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button
+                variant="secondary"
+                onClick={() => setIsCreateModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={() => setIsCreateModalOpen(false)}>
+                Create Ticket
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* View Ticket Modal */}
+      {isViewModalOpen && selectedTicket && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">{selectedTicket.ticketId}</h2>
+              <div className="flex space-x-2">
+                <Badge className={statusColors[selectedTicket.status]}>
+                  {selectedTicket.status}
+                </Badge>
+                <Badge className={priorityColors[selectedTicket.priority]}>
+                  {selectedTicket.priority}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Subject</h3>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {selectedTicket.subject}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Customer</h3>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {selectedTicket.customer.name} (
+                  {selectedTicket.customer.email})
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Description</h3>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {selectedTicket.description}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Created</h3>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {new Date(selectedTicket.createdAt).toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button
+                variant="secondary"
+                onClick={() => setIsViewModalOpen(false)}
+              >
+                Close
+              </Button>
+              <Button onClick={() => setIsViewModalOpen(false)}>Reply</Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </div>
+  );
+}

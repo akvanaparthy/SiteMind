@@ -204,8 +204,8 @@ class AgentConfigManager {
         environment: process.env.NODE_ENV || "development",
       },
       server: {
-        port: parseInt(process.env.PORT || "3001"),
-        host: process.env.HOST || "localhost",
+        port: parseInt(process.env.AGENT_PORT || process.env.PORT || "3001"),
+        host: process.env.AGENT_HOST || process.env.HOST || "localhost",
         url: process.env.AGENT_URL || "http://localhost:3001",
         websocket: {
           path: process.env.WS_PATH || "/ws",

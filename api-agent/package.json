@@ -5,30 +5,33 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "dev:agent": "cross-env AGENT_PORT=3001 tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
     "test-lmstudio": "node test-lmstudio.js"
   },
   "dependencies": {
-    "langchain": "^0.3.34",
-    "@langchain/core": "^0.3.77",
-    "@langchain/openai": "^0.6.13",
     "@langchain/community": "^0.3.56",
-    "ws": "^8.18.0",
-    "express": "^4.18.2",
+    "@langchain/core": "^0.3.77",
+    "@langchain/langgraph": "^0.4.9",
+    "@langchain/openai": "^0.6.13",
+    "@prisma/client": "^6.16.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "@prisma/client": "^6.16.2",
+    "express": "^4.18.2",
+    "langchain": "^0.3.34",
+    "node-fetch": "^2.7.0",
     "prisma": "^6.16.2",
-    "node-fetch": "^2.7.0"
+    "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/node": "^20.10.0",
     "@types/ws": "^8.5.10",
-    "@types/express": "^4.17.21",
-    "@types/cors": "^2.8.17",
-    "typescript": "^5.3.0",
-    "tsx": "^4.6.0"
+    "cross-env": "^10.0.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0"
   }
 }
