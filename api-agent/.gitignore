@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+test-output.log
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# TypeScript
+*.tsbuildinfo
+
+# Test files (root-level manual/quick tests only, not src/tests/)
+/manual-test*.ts
+/quick-test*.ts
+/verify-*.ts
+/*-test-*.ts
+
+# Test results
+*test-results*.json
+comprehensive-test-results.json
+test-results-*.json
+
+# Temporary/backup files
+*.tmp
+*.temp
+*.bak
+
+# Scripts (one-time use)
+src/scripts/

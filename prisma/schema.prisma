@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  USER
+  ADMIN
+  AI_AGENT
+}
+
+enum OrderStatus {
+  PENDING
+  DELIVERED
+  REFUNDED
+  CANCELLED
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  TRASHED
+}
+
+enum TicketStatus {
+  OPEN
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum LogStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String?  // Nullable for OAuth users
+  name      String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  orders    Order[]
+  tickets   Ticket[]
+  posts     Post[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  orderId     String      @unique @default(cuid())
+  customer    User        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId  Int
+  items       Json        // Array of {productId, name, quantity, price}
+  total       Float
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Post {
+  id         Int        @id @default(autoincrement())
+  title      String
+  slug       String     @unique
+  content    String     @db.Text
+  excerpt    String?    @db.Text
+  status     PostStatus @default(DRAFT)
+  author     User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId   Int
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  publishedAt DateTime?
+
+  @@index([slug])
+  @@index([authorId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Ticket {
+  id          Int            @id @default(autoincrement())
+  ticketId    String         @unique @default(cuid())
+  subject     String
+  description String         @db.Text
+  customer    User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId  Int
+  status      TicketStatus   @default(OPEN)
+  priority    TicketPriority @default(MEDIUM)
+  assignedTo  Int?           // User ID of assigned agent
+  resolution  String?        @db.Text
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  closedAt    DateTime?
+
+  @@index([ticketId])
+  @@index([customerId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+model SiteConfig {
+  id              Int       @id @default(autoincrement())
+  maintenanceMode Boolean   @default(false)
+  lastCacheClear  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model AgentLog {
+  id        Int       @id @default(autoincrement())
+  taskId    String    @unique @default(cuid()) // Unique identifier for this task
+  task      String    // Human-readable task description
+  status    LogStatus @default(PENDING)
+  timestamp DateTime  @default(now())
+  details   Json?     // Array of sub-steps: [{action, status, timestamp, error?}]
+  metadata  Json?     // Additional context: {userId, entityId, entityType, etc.}
+  parentId  Int?      // For hierarchical logs
+  agentName String    @default("AI Agent") // Which agent performed this
+
+  // Self-referential relation for parent/child logs
+  parent   AgentLog?  @relation("LogHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children AgentLog[] @relation("LogHierarchy")
+
+  @@index([taskId])
+  @@index([status])
+  @@index([timestamp])
+  @@index([parentId])
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String   @db.Text
+  price       Float
+  stock       Int      @default(0)
+  category    String?
+  images      Json?    // Array of image URLs
+  featured    Boolean  @default(false)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([category])
+  @@index([featured])
+  @@index([active])
+}
