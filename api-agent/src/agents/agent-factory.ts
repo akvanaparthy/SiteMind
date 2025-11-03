@@ -1,114 +1,66 @@
 /**
- * Universal Agent Factory
- * Routes to the appropriate agent implementation based on LLM provider
- * 
- * - LMStudio/Qwen → ReAct Agent (text-based reasoning) OR Function Calling
- * - Google Gemini → Native Function Calling Agent
+ * Agent Factory for Claude
+ * Creates Claude Haiku 3 agent instances
  */
 
-import { AgentExecutor } from 'langchain/agents';
-import { getConfig, LLMProvider } from '../utils/config';
+import { getConfig } from '../utils/config';
 import { logger } from '../utils/logger';
-import { createReactAgent } from './react-agent';
-import { createGeminiNativeAgent } from './gemini-native-agent';
-import { createLMStudioFunctionCallingAgent } from './lmstudio-function-calling-agent';
+import { createClaudeAgent } from './claude-agent';
+import { AgentLogSession } from '../utils/agent-log-client';
 
 /**
- * Create an agent appropriate for the configured LLM provider
+ * Create a Claude agent
  * 
- * Provider routing:
- * - lmstudio: Uses ReAct agent format (Thought/Action/Observation loop)
- * - lmstudio-fc: Uses OpenAI-compatible function calling
- * - gemini: Uses native function calling with official @google/genai SDK (Option 3)
- * 
- * @returns Agent executor configured for the active provider
+ * @returns Agent executor configured for Claude
  */
 export async function createAgent(): Promise<any> {
   const config = getConfig();
-  const provider = config.llmProvider;
 
   logger.info('═══════════════════════════════════════════════════');
   logger.info('🚀 INITIALIZING AI AGENT');
   logger.info('═══════════════════════════════════════════════════');
-  logger.info(`📡 Provider: ${provider.toUpperCase()}`);
+  logger.info('📡 Provider: CLAUDE');
+  logger.info('🔧 Mode: Claude Haiku 3 (Anthropic Messages API)');
+  logger.info(`📋 Model: ${config.claude.modelName}`);
+  logger.info('═══════════════════════════════════════════════════');
 
-  switch (provider) {
-    case 'lmstudio':
-      logger.info('🔧 Mode: ReAct Agent (Text-based reasoning)');
-      logger.info('📋 Format: Thought → Action → Observation loop');
-      return await createReactAgent();
-
-    case 'lmstudio-fc':
-      logger.info('🔧 Mode: LMStudio Function Calling (OpenAI-compatible API)');
-      logger.info('📋 Format: Direct tool invocation via OpenAI SDK');
-      return await createLMStudioFunctionCallingAgent();
-
-    case 'gemini':
-      logger.info('🔧 Mode: Native Function Calling (Official Google SDK - Option 3)');
-      logger.info('📋 Format: Direct tool invocation via @google/genai');
-      return await createGeminiNativeAgent();
-
-    default:
-      throw new Error(
-        `Unknown LLM provider: ${provider}. ` +
-        `Valid options: lmstudio, lmstudio-fc, gemini. ` +
-        `Set LLM_PROVIDER in .env file.`
-      );
-  }
+  return await createClaudeAgent();
 }
 
 /**
  * Get the current agent mode description
  */
 export function getAgentMode(): {
-  provider: LLMProvider;
+  provider: 'claude';
   mode: string;
   description: string;
 } {
   const config = getConfig();
-  const provider = config.llmProvider;
-
-  if (provider === 'lmstudio') {
-    return {
-      provider: 'lmstudio',
-      mode: 'ReAct',
-      description: 'Text-based reasoning with Thought/Action/Observation loop',
-    };
-  } else if (provider === 'lmstudio-fc') {
-    return {
-      provider: 'lmstudio-fc',
-      mode: 'Function Calling',
-      description: 'OpenAI-compatible function calling with direct tool invocation',
-    };
-  } else if (provider === 'gemini') {
-    return {
-      provider: 'gemini',
-      mode: 'Function Calling',
-      description: 'Native tool orchestration with direct invocation',
-    };
-  } else {
-    return {
-      provider: provider as LLMProvider,
-      mode: 'Unknown',
-      description: 'Unknown agent mode',
-    };
-  }
+  return {
+    provider: 'claude',
+    mode: 'Claude Haiku 3',
+    description: `Anthropic Messages API with tool use - ${config.claude.modelName}`,
+  };
 }
 
 /**
- * Execute a command with the appropriate agent
- * Automatically creates and uses the correct agent type
+ * Execute a command with the Claude agent
  * 
  * @param prompt - User command or question
- * @returns Agent response with output and optional intermediate steps
+ * @param history - Optional conversation history for context
+ * @returns Agent response with formatted output, intermediate steps, and log ID
  */
 export async function executeCommand(
-  prompt: string
-): Promise<{ output: string; intermediateSteps?: any[] }> {
+  prompt: string,
+  history?: Array<{ role: 'user' | 'agent'; content: string }>
+): Promise<{ output: string; rawOutput?: any; intermediateSteps?: any[]; logId?: number }> {
   logger.info('═══════════════════════════════════════════════════');
   logger.info('📨 NEW COMMAND');
   logger.info('═══════════════════════════════════════════════════');
   logger.info(`💬 Prompt: "${prompt}"`);
+  if (history && history.length > 0) {
+    logger.info(`📜 Context: ${history.length} previous messages`);
+  }
   logger.info('');
 
   const agent = await createAgent();
@@ -118,17 +70,102 @@ export async function executeCommand(
   logger.info('');
 
   try {
-    const result = await agent.invoke({ input: prompt });
+    // Build conversation context if history exists
+    let fullPrompt = prompt;
+    if (history && history.length > 0) {
+      const contextMessages = history
+        .slice(-4) // Keep last 4 messages for context (2 exchanges)
+        .map((msg) => {
+          const role = msg.role === 'user' ? 'User' : 'Assistant';
+          return `${role}: ${msg.content}`;
+        })
+        .join('\n\n');
+      
+      fullPrompt = `Previous conversation context:\n${contextMessages}\n\nCurrent request: ${prompt}`;
+      logger.info('💭 Added conversation context');
+    }
 
-    logger.info('');
-    logger.info('═══════════════════════════════════════════════════');
-    logger.info('✅ COMMAND COMPLETED SUCCESSFULLY');
-    logger.info('═══════════════════════════════════════════════════');
+    // Start logging to database
+    const logSession = await AgentLogSession.start(prompt, {
+      hasContext: history && history.length > 0,
+      contextLength: history?.length || 0,
+    });
 
-    return {
-      output: result.output,
-      intermediateSteps: result.intermediateSteps,
-    };
+    logger.info(`📝 Created agent log ID: ${logSession.getLogId()}`);
+
+    try {
+      await logSession.update('Initializing agent execution');
+      
+      const result = await agent.invoke({ input: fullPrompt });
+
+      await logSession.update('Agent execution completed');
+
+      logger.info('');
+      logger.info('═══════════════════════════════════════════════════');
+      logger.info('✅ COMMAND COMPLETED SUCCESSFULLY');
+      logger.info('═══════════════════════════════════════════════════');
+
+      // Format the output for frontend consumption
+      const output = result.output || result;
+      let formattedOutput: string;
+
+      // Handle different output formats
+      if (typeof output === 'string') {
+        formattedOutput = output;
+      } else if (Array.isArray(output)) {
+        // Claude returns array of content blocks: [{ type: 'text', text: '...' }]
+        formattedOutput = output
+          .filter((block: any) => block.type === 'text')
+          .map((block: any) => block.text)
+          .join('\n\n');
+      } else if (output && typeof output === 'object') {
+        // Handle object responses
+        if (output.text) {
+          formattedOutput = output.text;
+        } else if (output.content) {
+          formattedOutput = Array.isArray(output.content)
+            ? output.content.map((c: any) => c.text || JSON.stringify(c)).join('\n')
+            : output.content;
+        } else {
+          formattedOutput = JSON.stringify(output, null, 2);
+        }
+      } else {
+        formattedOutput = String(output);
+      }
+
+      // Extract tool calls from intermediate steps for logging
+      const toolCalls = result.intermediateSteps?.map((step: any) => ({
+        tool: step.action?.tool || 'unknown',
+        input: step.action?.toolInput || {},
+        output: step.observation || '',
+        status: step.observation && !step.observation.includes('Error') ? 'success' : 'failed',
+      })) || [];
+
+      // Log each tool call
+      for (const tool of toolCalls) {
+        const logAction = `🔧 Tool: ${tool.tool}`;
+        if (tool.status === 'success') {
+          await logSession.update(logAction, { input: tool.input, output: tool.output });
+        } else {
+          await logSession.updateWithError(logAction, tool.output);
+        }
+      }
+
+      // Mark as complete
+      const summary = formattedOutput.substring(0, 100) + (formattedOutput.length > 100 ? '...' : '');
+      await logSession.complete(summary);
+
+      return {
+        output: formattedOutput,
+        rawOutput: output, // Keep raw output for debugging
+        intermediateSteps: result.intermediateSteps,
+        logId: logSession.getLogId(), // Return log ID for reference
+      };
+    } catch (executionError: any) {
+      // Log execution failure
+      await logSession.fail(executionError.message || 'Unknown error');
+      throw executionError;
+    }
   } catch (error) {
     logger.error('');
     logger.error('═══════════════════════════════════════════════════');

@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
+    const type = searchParams.get('type');
     const id = searchParams.get('id');
     const slug = searchParams.get('slug');
     const status = searchParams.get('status') as PostStatus | null;
@@ -25,6 +26,23 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
     const orderBy = searchParams.get('orderBy') as 'asc' | 'desc' | null;
+
+    // Handle type=get for agent tools compatibility
+    if (type === 'get' && id) {
+      const post = await getBlogPost(parseInt(id));
+      if (!post) {
+        return NextResponse.json(
+          { success: false, action: 'getBlogPost', error: 'Post not found' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ 
+        success: true, 
+        action: 'getBlogPost',
+        data: { post },
+        timestamp: new Date().toISOString() 
+      });
+    }
 
     // Get single post if id or slug is provided
     if (id || slug) {
@@ -68,8 +86,37 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, content, excerpt, authorId, slug, status, publishNow } = body;
+    const { type, title, content, excerpt, authorId, slug, status, publishNow } = body;
 
+    // Handle type-based operations for agent tools compatibility
+    if (type === 'create') {
+      if (!title || !content || !authorId) {
+        return NextResponse.json(
+          { success: false, action: 'createBlogPost', error: 'Missing required fields: title, content, authorId' },
+          { status: 400 }
+        );
+      }
+
+      const post = await createBlogPost({
+        title,
+        content,
+        excerpt,
+        authorId,
+        slug,
+        status,
+        publishNow,
+      });
+
+      return NextResponse.json({
+        success: true,
+        action: 'createBlogPost',
+        data: { post },
+        message: 'Blog post created successfully',
+        timestamp: new Date().toISOString(),
+      }, { status: 201 });
+    }
+
+    // Default behavior for non-typed requests
     if (!title || !content || !authorId) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields: title, content, authorId' },
@@ -112,21 +159,27 @@ export async function PUT(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Missing required field: id' },
+        { success: false, action: type || 'updateBlogPost', error: 'Missing required field: id' },
         { status: 400 }
       );
     }
 
     let post;
     let message = 'Blog post updated successfully';
+    let action = 'updateBlogPost';
 
     // Handle different operation types
     if (type === 'publish') {
       post = await publishBlogPost(id);
       message = 'Blog post published successfully';
+      action = 'publishBlogPost';
     } else if (type === 'trash') {
       post = await trashBlogPost(id);
       message = 'Blog post moved to trash';
+      action = 'trashBlogPost';
+    } else if (type === 'update') {
+      post = await updateBlogPost(id, updates);
+      action = 'updateBlogPost';
     } else {
       // Default: update post with provided fields
       post = await updateBlogPost(id, updates);
@@ -134,8 +187,10 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: post,
+      action,
+      data: { post },
       message,
+      timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
     console.error('[API] Error updating post:', error);

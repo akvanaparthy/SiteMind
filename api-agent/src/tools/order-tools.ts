@@ -27,14 +27,14 @@ Returns JSON response:
   "logId": 133
 }`,
   schema: z.object({
-    orderId: z.string().describe('Unique order ID string'),
+    id: z.coerce.number().describe('Numeric order ID'),
   }),
   func: async (input) => {
     try {
-      const parsed = parseToolInput<{orderId: string}>(input);
+      const parsed = parseToolInput<{id: number}>(input);
       logger.debug('Tool: get_order - input received:', JSON.stringify(parsed));
-      const result = await orderAPI.get(parsed.orderId);
-      logger.info('Tool: get_order - Success', { orderId: parsed.orderId });
+      const result = await orderAPI.get(parsed.id);
+      logger.info('Tool: get_order - Success', { orderId: parsed.id });
       return JSON.stringify(result, null, 2);
     } catch (error) {
       logger.error('Tool: get_order - Failed', error);
@@ -108,7 +108,7 @@ Returns JSON response:
   "logId": 135
 }`,
   schema: z.object({
-    orderId: z.string().describe('Unique order ID string'),
+    id: z.coerce.number().describe('Numeric order ID'),
     status: z.string()
       .transform(val => val.toUpperCase())
       .pipe(z.enum(['PENDING', 'DELIVERED', 'REFUNDED']))
@@ -116,12 +116,12 @@ Returns JSON response:
   }),
   func: async (input) => {
     try {
-      const parsed = parseToolInput<{orderId: string; status: string}>(input);
+      const parsed = parseToolInput<{id: number; status: string}>(input);
       logger.debug('Tool: update_order_status', parsed);
       // Cast to the correct enum type
       const status = parsed.status as 'PENDING' | 'DELIVERED' | 'REFUNDED';
-      const result = await orderAPI.updateStatus(parsed.orderId, status);
-      logger.info('Tool: update_order_status - Success', { orderId: parsed.orderId, status: status });
+      const result = await orderAPI.updateStatus(parsed.id, status);
+      logger.info('Tool: update_order_status - Success', { orderId: parsed.id, status: status });
       return JSON.stringify(result, null, 2);
     } catch (error) {
       logger.error('Tool: update_order_status - Failed', error);
@@ -170,15 +170,15 @@ After approval:
   "logId": 137
 }`,
   schema: z.object({
-    orderId: z.string().describe('Unique order ID string'),
+    id: z.coerce.number().describe('Numeric order ID'),
     reason: z.string().describe('Reason for the refund'),
   }),
   func: async (input: any) => {
     try {
-      const parsed = parseToolInput<{orderId: string; reason: string}>(input);
+      const parsed = parseToolInput<{id: number; reason: string}>(input);
       logger.debug('Tool: process_refund', parsed);
-      const result = await orderAPI.processRefund(parsed.orderId, parsed.reason);
-      logger.info('Tool: process_refund - Request sent', { orderId: parsed.orderId });
+      const result = await orderAPI.processRefund(parsed.id, parsed.reason);
+      logger.info('Tool: process_refund - Request sent', { orderId: parsed.id });
       return JSON.stringify(result, null, 2);
     } catch (error) {
       logger.error('Tool: process_refund - Failed', error);
@@ -215,18 +215,18 @@ Returns JSON response:
   "logId": 138
 }`,
   schema: z.object({
-    orderId: z.string().describe('Unique order ID string'),
+    id: z.coerce.number().describe('Numeric order ID'),
     subject: z.string().describe('Email subject line'),
     message: z.string().optional().default('Notification about your order').describe('Email message body (defaults to generic message if not provided)'),
   }),
   func: async (input) => {
     try {
-      const parsed = parseToolInput<{orderId: string; subject: string; message?: string}>(input);
+      const parsed = parseToolInput<{id: number; subject: string; message?: string}>(input);
       logger.debug('Tool: notify_customer', parsed);
       // Use default message if not provided
       const message = parsed.message ?? 'Notification about your order';
-      const result = await orderAPI.notifyCustomer(parsed.orderId, parsed.subject, message);
-      logger.info('Tool: notify_customer - Success', { orderId: parsed.orderId });
+      const result = await orderAPI.notifyCustomer(parsed.id, parsed.subject, message);
+      logger.info('Tool: notify_customer - Success', { orderId: parsed.id });
       return JSON.stringify(result, null, 2);
     } catch (error) {
       logger.error('Tool: notify_customer - Failed', error);

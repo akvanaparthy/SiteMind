@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
+    const type = searchParams.get('type');
     const id = searchParams.get('id');
     const orderId = searchParams.get('orderId');
     const status = searchParams.get('status') as OrderStatus | null;
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
     const orderBy = searchParams.get('orderBy') as 'asc' | 'desc' | null;
-    const pendingOnly = searchParams.get('pendingOnly') === 'true';
+    const pendingOnly = searchParams.get('pendingOnly') === 'true' || type === 'getPending';
     const stats = searchParams.get('stats') === 'true';
 
     // Get statistics if requested
@@ -43,8 +44,27 @@ export async function GET(request: NextRequest) {
       const orders = await getPendingOrders();
       return NextResponse.json({
         success: true,
-        data: orders,
+        action: 'getPendingOrders',
+        data: { orders },
         count: orders.length,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Handle type=get for agent tools compatibility
+    if (type === 'get' && orderId) {
+      const order = await getOrder(orderId);
+      if (!order) {
+        return NextResponse.json(
+          { success: false, action: 'getOrder', error: 'Order not found' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ 
+        success: true,
+        action: 'getOrder', 
+        data: { order },
+        timestamp: new Date().toISOString()
       });
     }
 
@@ -94,17 +114,18 @@ export async function POST(request: NextRequest) {
 
     // Handle refund requests
     if (type === 'refund') {
-      const { orderId, reason } = body;
+      const { id, orderId, reason } = body;
+      const orderIdentifier = id || orderId;
       
-      if (!orderId) {
+      if (!orderIdentifier) {
         return NextResponse.json(
-          { success: false, error: 'Missing required field: orderId' },
+          { success: false, error: 'Missing required field: id or orderId' },
           { status: 400 }
         );
       }
 
       // Generate approval request first
-      const approvalRequest = await generateRefundApprovalRequest(orderId, reason);
+      const approvalRequest = await generateRefundApprovalRequest(orderIdentifier, reason);
       
       return NextResponse.json({
         success: true,
@@ -117,16 +138,17 @@ export async function POST(request: NextRequest) {
 
     // Handle customer notification requests
     if (type === 'notify') {
-      const { orderId, subject, message } = body;
+      const { id, orderId, subject, message } = body;
+      const orderIdentifier = id || orderId;
       
-      if (!orderId || !subject || !message) {
+      if (!orderIdentifier || !subject || !message) {
         return NextResponse.json(
-          { success: false, error: 'Missing required fields: orderId, subject, message' },
+          { success: false, error: 'Missing required fields: id (or orderId), subject, message' },
           { status: 400 }
         );
       }
 
-      const result = await notifyCustomer(orderId, { subject, message });
+      const result = await notifyCustomer(orderIdentifier, { subject, message });
       
       return NextResponse.json({
         success: true,
@@ -181,7 +203,7 @@ export async function PUT(request: NextRequest) {
 
     if (!orderIdentifier || !status) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: (id or orderId) and status' },
+        { success: false, action: 'updateOrderStatus', error: 'Missing required fields: (id or orderId) and status' },
         { status: 400 }
       );
     }
@@ -190,13 +212,15 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: order,
+      action: 'updateOrderStatus',
+      data: { order },
       message: 'Order status updated successfully',
+      timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
     console.error('[API] Error updating order:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to update order' },
+      { success: false, action: 'updateOrderStatus', error: error.message || 'Failed to update order' },
       { status: 500 }
     );
   }

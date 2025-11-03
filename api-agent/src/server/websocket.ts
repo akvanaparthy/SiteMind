@@ -7,6 +7,7 @@ import { createServer } from 'http';
 import { getConfig } from '../utils/config';
 import { logger } from '../utils/logger';
 import { WSMessage, AgentStatusData, ApprovalRequest, ApprovalResponse } from '../types/agent';
+import { executeCommand } from '../agents/agent-factory';
 
 export class WebSocketServer {
   private io: SocketIOServer | null = null;
@@ -21,7 +22,77 @@ export class WebSocketServer {
     const config = getConfig();
 
     // Create HTTP server
-    this.httpServer = createServer();
+    this.httpServer = createServer((req, res) => {
+      // Handle HTTP requests
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+      }
+
+      if (req.url === '/health' && req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }));
+        return;
+      }
+
+      if (req.url === '/status' && req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          status: 'online',
+          provider: config.provider,
+          model: config.model,
+          timestamp: new Date().toISOString(),
+        }));
+        return;
+      }
+
+      if (req.url === '/execute' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+        req.on('end', async () => {
+          try {
+            const { command, prompt, history } = JSON.parse(body);
+            const commandText = command || prompt;
+
+            if (!commandText) {
+              res.writeHead(400, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: false, error: 'Missing command' }));
+              return;
+            }
+
+            logger.info(`Executing command via HTTP: ${commandText}`);
+            if (history && history.length > 0) {
+              logger.info(`With conversation history: ${history.length} messages`);
+            }
+            
+            const result = await executeCommand(commandText, history || []);
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              success: true,
+              output: result.output,
+              timestamp: new Date().toISOString(),
+            }));
+          } catch (error: any) {
+            logger.error('Command execution failed:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              success: false,
+              error: error.message || 'Command execution failed',
+            }));
+          }
+        });
+        return;
+      }
+
+      res.writeHead(404);
+      res.end('Not Found');
+    });
 
     // Create Socket.IO server
     this.io = new SocketIOServer(this.httpServer, {

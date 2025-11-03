@@ -9,41 +9,30 @@ import { AgentConfig } from '../types/agent';
 // Load .env file
 dotenv.config();
 
-export type LLMProvider = 'lmstudio' | 'lmstudio-fc' | 'gemini';
+export type LLMProvider = 'claude';
 
 /**
  * Load and validate agent configuration
  */
 export function loadConfig(): AgentConfig {
-  const provider = (process.env.LLM_PROVIDER || 'lmstudio') as LLMProvider;
-  
   const config: AgentConfig = {
     port: parseInt(process.env.AGENT_PORT || '3002', 10),
     host: process.env.AGENT_HOST || 'localhost',
     
-    llmProvider: provider,
+    llmProvider: 'claude',
     
-    llm: {
-      baseURL: process.env.OPENAI_API_BASE || 'http://localhost:1234/v1',
-      apiKey: process.env.OPENAI_API_KEY || 'lm-studio',
-      modelName: process.env.LMSTUDIO_MODEL_NAME || process.env.LLM_MODEL_NAME || 'qwen/qwen2.5-coder-32b',
-      temperature: parseFloat(process.env.LLM_TEMPERATURE || '0.1'),
-      maxTokens: parseInt(process.env.LLM_MAX_TOKENS || '10000', 10),
-      timeout: parseInt(process.env.LLM_TIMEOUT || '30000', 10),
-      autoLoad: process.env.LLM_AUTO_LOAD === 'true',
-    },
-    
-    gemini: {
-      apiKey: process.env.GOOGLE_API_KEY || '',
-      modelName: process.env.GEMINI_MODEL_NAME || 'gemini-2.0-flash-exp',
-      projectId: process.env.GOOGLE_PROJECT_ID || '',
-      projectNumber: process.env.GOOGLE_PROJECT_NUMBER || '',
-      temperature: parseFloat(process.env.LLM_TEMPERATURE || '0.1'),
-      maxTokens: parseInt(process.env.LLM_MAX_TOKENS || '10000', 10),
+    // Claude configuration (Anthropic)
+    // LangChain uses ANTHROPIC_API_KEY by convention
+    claude: {
+      apiKey: process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY || '',
+      apiUrl: process.env.CLAUDE_API_URL || 'https://api.anthropic.com/v1/messages',
+      modelName: process.env.CLAUDE_MODEL_NAME || 'claude-3-haiku-20240307',
+      temperature: parseFloat(process.env.CLAUDE_TEMPERATURE || '0.0'),
+      maxTokens: parseInt(process.env.CLAUDE_MAX_TOKENS || '4096', 10),
     },
     
     nextjsApiUrl: process.env.NEXTJS_API_URL || 'http://localhost:3000/api',
-    nextjsApiTimeout: parseInt(process.env.NEXTJS_API_TIMEOUT || '10000', 10),
+    nextjsApiTimeout: parseInt(process.env.NEXTJS_API_TIMEOUT || '30000', 10),
     
     wsPath: process.env.WS_PATH || '/ws',
     wsCorsOrigin: process.env.WS_CORS_ORIGIN || 'http://localhost:3000',
@@ -53,17 +42,6 @@ export function loadConfig(): AgentConfig {
     approvalTimeout: parseInt(process.env.APPROVAL_TIMEOUT || '300000', 10),
     maxRetries: parseInt(process.env.MAX_RETRIES || '3', 10),
   };
-
-  // Optional Pinecone configuration
-  if (process.env.PINECONE_API_KEY) {
-    config.pinecone = {
-      apiKey: process.env.PINECONE_API_KEY,
-      environment: process.env.PINECONE_ENVIRONMENT || '',
-      indexName: process.env.PINECONE_INDEX_NAME || 'sitemind-agent-memory',
-      namespace: process.env.PINECONE_NAMESPACE || 'agent-memory',
-      dimensions: parseInt(process.env.PINECONE_DIMENSIONS || '1536', 10),
-    };
-  }
 
   return config;
 }
@@ -94,18 +72,12 @@ export function reloadConfig(): AgentConfig {
 export function validateConfig(config: AgentConfig): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  // Validate based on provider
-  if (config.llmProvider === 'lmstudio' || config.llmProvider === 'lmstudio-fc') {
-    if (!config.llm.baseURL) {
-      errors.push('LLM base URL is required for LMStudio (OPENAI_API_BASE)');
-    }
-  } else if (config.llmProvider === 'gemini') {
-    if (!config.gemini?.apiKey) {
-      errors.push('Google API Key is required for Gemini (GOOGLE_API_KEY)');
-    }
-    if (!config.gemini?.modelName) {
-      errors.push('Gemini model name is required (GEMINI_MODEL_NAME)');
-    }
+  // Validate Claude configuration
+  if (!config.claude?.apiKey) {
+    errors.push('Claude API Key is required (ANTHROPIC_API_KEY or CLAUDE_API_KEY)');
+  }
+  if (!config.claude?.modelName) {
+    errors.push('Claude model name is required (CLAUDE_MODEL_NAME)');
   }
 
   if (!config.nextjsApiUrl) {

@@ -5,7 +5,6 @@
 
 import { getConfig, validateConfig } from './utils/config';
 import { logger } from './utils/logger';
-import { initializeLMStudio, checkLMStudioHealth } from './utils/lmstudio-client';
 import { wsServer } from './server/websocket';
 
 /**
@@ -27,30 +26,20 @@ async function start() {
     }
     logger.info('✅ Configuration loaded', {
       port: config.port,
-      llmProvider: 'LMStudio',
-      llmBaseURL: config.llm.baseURL,
+      llmProvider: 'Claude (Anthropic)',
+      model: config.claude.modelName,
       nextjsAPI: config.nextjsApiUrl,
     });
 
-    // Initialize LMStudio connection
-    logger.info('\n🤖 Initializing LMStudio connection...');
-    try {
-      await initializeLMStudio(3);
-      logger.info('✅ LMStudio initialized successfully\n');
-    } catch (error) {
-      logger.error('❌ Failed to initialize LMStudio', error);
-      logger.warn('⚠️  Agent service will start, but LLM functionality will be unavailable');
-      logger.info('💡 Please ensure LMStudio is running and a model is loaded\n');
-    }
-
-    // Start WebSocket server
-    logger.info('🌐 Starting WebSocket server...');
+    // Start WebSocket server (with HTTP endpoints)
+    logger.info('\n🌐 Starting WebSocket server with HTTP API...');
     await wsServer.start();
 
     logger.info('\n✨ Agent Service is ready!\n');
     logger.info('📊 Status:');
+    logger.info(`   - HTTP API: http://${config.host}:${config.port}`);
     logger.info(`   - WebSocket: ws://${config.host}:${config.port}${config.wsPath}`);
-    logger.info(`   - LMStudio: ${config.llm.baseURL}`);
+    logger.info(`   - Claude Model: ${config.claude.modelName}`);
     logger.info(`   - Next.js API: ${config.nextjsApiUrl}`);
     logger.info(`   - Log Level: ${config.logLevel}`);
     
@@ -70,16 +59,6 @@ function startHealthCheck() {
   const HEALTH_CHECK_INTERVAL = 60000; // 1 minute
 
   setInterval(async () => {
-    const status = await checkLMStudioHealth();
-    
-    if (!status.connected) {
-      logger.warn('⚠️  LMStudio health check failed: Not connected');
-    } else if (!status.modelLoaded) {
-      logger.warn('⚠️  LMStudio health check: Model not loaded');
-    } else {
-      logger.debug('✅ LMStudio health check passed', { model: status.modelName });
-    }
-
     // Log connected clients
     const clientCount = wsServer.getConnectedClients();
     logger.debug(`WebSocket clients: ${clientCount}`);

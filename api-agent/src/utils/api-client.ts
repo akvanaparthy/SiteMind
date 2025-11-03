@@ -9,7 +9,7 @@ import { ActionAPIResponse } from '../types/agent';
 /**
  * Make HTTP request to Next.js API
  */
-async function makeRequest(
+export async function makeRequest(
   endpoint: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
   body?: any
@@ -91,18 +91,18 @@ export const ticketAPI = {
  * Order Actions
  */
 export const orderAPI = {
-  get: (orderId: string) => makeRequest(`/orders?type=get&orderId=${orderId}`, 'GET'),
+  get: (id: number) => makeRequest(`/orders?type=get&id=${id}`, 'GET'),
 
   getPending: () => makeRequest('/orders?type=getPending', 'GET'),
 
-  updateStatus: (orderId: string, status: 'PENDING' | 'DELIVERED' | 'REFUNDED') =>
-    makeRequest('/orders', 'PUT', { type: 'updateStatus', orderId, status }),
+  updateStatus: (id: number, status: 'PENDING' | 'DELIVERED' | 'REFUNDED') =>
+    makeRequest('/orders', 'PUT', { type: 'updateStatus', id, status }),
 
-  processRefund: (orderId: string, reason: string) =>
-    makeRequest('/orders', 'POST', { type: 'refund', orderId, reason }),
+  processRefund: (id: number, reason: string) =>
+    makeRequest('/orders', 'POST', { type: 'refund', id, reason }),
 
-  notifyCustomer: (orderId: string, subject: string, message: string) =>
-    makeRequest('/orders', 'POST', { type: 'notify', orderId, subject, message }),
+  notifyCustomer: (id: number, subject: string, message: string) =>
+    makeRequest('/orders', 'POST', { type: 'notify', id, subject, message }),
 };
 
 /**

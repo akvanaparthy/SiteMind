@@ -12,12 +12,12 @@ import {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { action: string } }
+  { params }: { params: Promise<{ action: string }> }
 ) {
   try {
     const body = await request.json();
     const { id, reason, approvalId, message } = body;
-    const { action } = params;
+    const { action } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -85,9 +85,10 @@ export async function POST(
       message: `Order ${action} completed successfully`,
     });
   } catch (error: any) {
-    console.error(`[API] Error ${params.action}ing order:`, error);
+    const { action } = await params;
+    console.error(`[API] Error ${action}ing order:`, error);
     return NextResponse.json(
-      { success: false, error: error.message || `Failed to ${params.action} order` },
+      { success: false, error: error.message || `Failed to ${action} order` },
       { status: 500 }
     );
   }

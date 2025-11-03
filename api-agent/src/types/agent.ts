@@ -87,17 +87,16 @@ export interface LLMConfig {
   autoLoad: boolean;
 }
 
-// Gemini Configuration
-export interface GeminiConfig {
+export type LLMProvider = 'claude';
+
+// Claude configuration
+export interface ClaudeConfig {
   apiKey: string;
+  apiUrl: string;
   modelName: string;
-  projectId: string;
-  projectNumber: string;
   temperature: number;
   maxTokens: number;
 }
-
-export type LLMProvider = 'lmstudio' | 'lmstudio-fc' | 'gemini';
 
 // Action API Response (from Next.js backend)
 export interface ActionAPIResponse {
@@ -129,8 +128,7 @@ export interface AgentConfig {
   port: number;
   host: string;
   llmProvider: LLMProvider;
-  llm: LLMConfig;
-  gemini: GeminiConfig;
+  claude: ClaudeConfig;
   nextjsApiUrl: string;
   nextjsApiTimeout: number;
   wsPath: string;
@@ -139,11 +137,4 @@ export interface AgentConfig {
   maxLogsInMemory: number;
   approvalTimeout: number;
   maxRetries: number;
-  pinecone?: {
-    apiKey: string;
-    environment: string;
-    indexName: string;
-    namespace: string;
-    dimensions: number;
-  };
 }

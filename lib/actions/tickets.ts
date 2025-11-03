@@ -344,13 +344,13 @@ export async function assignTicket(
  * Close a ticket with resolution
  * 
  * @param ticketId - Ticket ID
- * @param resolution - Resolution description
+ * @param resolution - Resolution description (optional)
  * @param agentName - Name of the agent closing
  * @returns The closed ticket
  */
 export async function closeTicket(
   ticketId: number,
-  resolution: string,
+  resolution?: string,
   agentName: string = 'AI Agent'
 ): Promise<Ticket> {
   const { log, update, complete, fail } = await startLogging(
@@ -378,7 +378,7 @@ export async function closeTicket(
       where: { id: ticketId },
       data: {
         status: TicketStatus.CLOSED,
-        resolution,
+        ...(resolution && { resolution }),
         closedAt: new Date(),
         updatedAt: new Date(),
       },

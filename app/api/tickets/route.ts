@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
+    const type = searchParams.get('type');
     const id = searchParams.get('id');
     const ticketId = searchParams.get('ticketId');
     const status = searchParams.get('status') as TicketStatus | null;
@@ -30,15 +31,34 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
     const orderBy = searchParams.get('orderBy') as 'asc' | 'desc' | null;
-    const openOnly = searchParams.get('openOnly') === 'true';
+    const openOnly = searchParams.get('openOnly') === 'true' || type === 'getOpen';
 
     // Get open tickets if requested
     if (openOnly) {
       const tickets = await getOpenTickets();
       return NextResponse.json({
         success: true,
-        data: tickets,
+        action: 'getOpenTickets',
+        data: { tickets },
         count: tickets.length,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Handle type=get for agent tools compatibility
+    if (type === 'get' && id) {
+      const ticket = await getTicket(parseInt(id));
+      if (!ticket) {
+        return NextResponse.json(
+          { success: false, action: 'getTicket', error: 'Ticket not found' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ 
+        success: true, 
+        action: 'getTicket',
+        data: { ticket },
+        timestamp: new Date().toISOString()
       });
     }
 
@@ -128,36 +148,40 @@ export async function PUT(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Missing required field: id' },
+        { success: false, action: type || 'updateTicket', error: 'Missing required field: id' },
         { status: 400 }
       );
     }
 
     let ticket;
     let message = 'Ticket updated successfully';
+    let action = 'updateTicket';
 
     // Handle different operation types
     if (type === 'close') {
       ticket = await closeTicket(id, updates.resolution);
       message = 'Ticket closed successfully';
+      action = 'closeTicket';
     } else if (type === 'updatePriority') {
       if (!updates.priority) {
         return NextResponse.json(
-          { success: false, error: 'Missing required field: priority' },
+          { success: false, action: 'updateTicketPriority', error: 'Missing required field: priority' },
           { status: 400 }
         );
       }
       ticket = await updateTicketPriority(id, updates.priority);
       message = `Ticket priority updated to ${updates.priority}`;
+      action = 'updateTicketPriority';
     } else if (type === 'assign') {
       if (!updates.assigneeId) {
         return NextResponse.json(
-          { success: false, error: 'Missing required field: assigneeId' },
+          { success: false, action: 'assignTicket', error: 'Missing required field: assigneeId' },
           { status: 400 }
         );
       }
       ticket = await assignTicket(id, updates.assigneeId);
       message = `Ticket assigned to user #${updates.assigneeId}`;
+      action = 'assignTicket';
     } else {
       // Default: update ticket with provided fields
       ticket = await updateTicket(id, updates);
@@ -165,8 +189,10 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: ticket,
+      action,
+      data: { ticket },
       message,
+      timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
     console.error('[API] Error updating ticket:', error);

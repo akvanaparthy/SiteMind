@@ -8,12 +8,12 @@ import { TicketPriority } from '@prisma/client';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { action: string } }
+  { params }: { params: Promise<{ action: string }> }
 ) {
   try {
     const body = await request.json();
     const { id, resolution, priority, agentId } = body;
-    const { action } = params;
+    const { action } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -71,9 +71,10 @@ export async function POST(
       message: `Ticket ${action} completed successfully`,
     });
   } catch (error: any) {
-    console.error(`[API] Error ${params.action}ing ticket:`, error);
+    const { action } = await params;
+    console.error(`[API] Error ${action}ing ticket:`, error);
     return NextResponse.json(
-      { success: false, error: error.message || `Failed to ${params.action} ticket` },
+      { success: false, error: error.message || `Failed to ${action} ticket` },
       { status: 500 }
     );
   }

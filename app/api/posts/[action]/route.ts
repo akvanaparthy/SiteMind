@@ -7,12 +7,12 @@ import { publishBlogPost, trashBlogPost } from '@/lib/actions/blog';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { action: string } }
+  { params }: { params: Promise<{ action: string }> }
 ) {
   try {
     const body = await request.json();
     const { id } = body;
-    const { action } = params;
+    const { action } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -42,9 +42,10 @@ export async function POST(
       message: `Blog post ${action}ed successfully`,
     });
   } catch (error: any) {
-    console.error(`[API] Error ${params.action}ing post:`, error);
+    const { action } = await params;
+    console.error(`[API] Error ${action}ing post:`, error);
     return NextResponse.json(
-      { success: false, error: error.message || `Failed to ${params.action} post` },
+      { success: false, error: error.message || `Failed to ${action} post` },
       { status: 500 }
     );
   }
