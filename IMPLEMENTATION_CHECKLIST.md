@@ -1,8 +1,10 @@
 # SiteMind: Implementation Checklist
 
 **Purpose:** Step-by-step execution plan for building SiteMind from scratch  
-**Status:** Phase 1 (Backend & Agent) - 90% Complete  
-**Last Updated:** November 2, 2025
+**Status:** Phase 1 (Backend & Agent) - 85% Complete  
+**Last Updated:** November 2, 2025  
+**Primary Agent:** LMStudio Function Calling (lmstudio-fc) with Qwen Coder 32B  
+**Current Focus:** Making agent execute tools PERFECTLY with valid JSON responses
 
 > **IMPORTANT:** Check off items as you complete them. This document should be your daily reference. Even if you lose all context, this checklist will guide you back.
 
@@ -106,7 +108,17 @@
 
 ---
 
-## PHASE 1: BACKEND & AGENT (🔄 90% Complete)
+## PHASE 1: BACKEND & AGENT (🔄 85% Complete - CURRENT FOCUS)
+
+> **GOAL:** Make the LMStudio FC agent execute all 21 tools perfectly with 90%+ success rate and 100% valid JSON responses.
+
+### 1.0 Configuration & Setup
+- ✅ Set `LLM_PROVIDER=lmstudio-fc` in `api-agent/.env`
+- ✅ Confirm Qwen Coder 32B loaded in LMStudio
+- ✅ Confirm LMStudio running on `http://localhost:1234`
+- ✅ Confirm Next.js API running on `http://localhost:3000`
+- ✅ Confirm PostgreSQL running (Docker): `docker ps`
+- ✅ Confirm seed data exists: `npm run db:studio` (check all tables)
 
 ### 1.1 Prisma Client Setup
 - ✅ Create `lib/prisma.ts`:
@@ -468,7 +480,7 @@ Each tool must:
   - ✅ Final Answer format
 - ✅ Return AgentExecutor with invoke() method
 
-#### 1.13.2 LMStudio Function Calling Agent (`lmstudio-function-calling-agent.ts`)
+#### 1.13.2 LMStudio Function Calling Agent (`lmstudio-function-calling-agent.ts`) - ✅ PRIMARY MODE
 - ✅ Use OpenAI SDK directly (not LangChain wrapper)
 - ✅ Convert tools to OpenAI function format
 - ✅ Implement iterative loop:
@@ -477,17 +489,13 @@ Each tool must:
   - ✅ Loop until text response
 - ✅ Handle errors gracefully
 - ✅ Return agent executor compatible with invoke()
+- 🔄 **TESTING REQUIRED:** Validate all 21 tools work correctly
+- 🔄 **TESTING REQUIRED:** Ensure 100% valid JSON responses
 
-#### 1.13.3 Gemini Native Agent (`gemini-native-agent.ts`) - 🔄 IN PROGRESS
-- 🔄 Use `@google/genai` SDK (official Google SDK)
-- 🔄 Convert all tools to Gemini `FunctionDeclaration` format
-- 🔄 Implement iterative loop:
-  - 🔄 Call `generateContent()` with tools
-  - 🔄 If `functionCalls`: execute each tool, add responses
-  - 🔄 Loop until text response
-- 🔄 Expected: 90-100% tool success rate
-- 🔄 Return agent executor compatible with invoke()
-- 🔄 **ETA: 6-10 hours** (per `agents.md`)
+#### 1.13.3 Gemini Native Agent (`gemini-native-agent.ts`) - ⏸️ PAUSED
+- ⏸️ **Paused due to API rate limiting issues**
+- ⏸️ Will revisit after Phase 1 is 100% complete with LMStudio FC
+- � Code exists but not priority for testing
 
 #### 1.13.4 Agent Factory (`agent-factory.ts`)
 - ✅ `createAgent()`:
@@ -521,7 +529,9 @@ Each tool must:
 - ✅ Implement health check interval (60s)
 - ✅ Handle shutdown gracefully (SIGINT, SIGTERM)
 
-### 1.16 Testing
+### 1.16 Testing - 🔥 CRITICAL PRIORITY
+
+> **MISSION CRITICAL:** Test every single tool with the LMStudio FC agent. Goal: 90%+ success rate, 100% valid JSON.
 
 #### 1.16.1 Manual API Testing
 - ✅ Test each API route with Thunder Client/Postman:
@@ -538,33 +548,96 @@ Each tool must:
   - ✅ POST /api/site (toggle maintenance, clear cache)
   - ✅ GET /api/logs (all, by status, by ID)
 
-#### 1.16.2 Tool Testing
-- 🔄 Test each tool in isolation (`npm run test:tools`):
-  - 🧪 Blog tools (5) - Need comprehensive test
-  - 🧪 Ticket tools (5) - Need comprehensive test
-  - 🧪 Order tools (5) - Need comprehensive test
-  - 🧪 Site tools (4) - Need comprehensive test
-  - 🧪 Logs tools (2) - Need comprehensive test
+#### 1.16.2 Tool Testing (Individual Tool Validation)
+- 🔄 **NEXT STEP:** Create test script for each tool category
+- 🔄 Blog tools (5 tools):
+  - ❌ `createBlogPostTool` - Test with valid input
+  - ❌ `getBlogPostTool` - Test with ID and slug
+  - ❌ `updateBlogPostTool` - Test field updates
+  - ❌ `publishBlogPostTool` - Test status change
+  - ❌ `trashBlogPostTool` - Test status change
+- 🔄 Ticket tools (5 tools):
+  - ❌ `getTicketTool` - Test with valid ID
+  - ❌ `getOpenTicketsTool` - Test filtering
+  - ❌ `closeTicketTool` - Test with resolution
+  - ❌ `updateTicketPriorityTool` - Test priority change
+  - ❌ `assignTicketTool` - Test assignment
+- 🔄 Order tools (5 tools):
+  - ❌ `getOrderTool` - Test with ID and orderId
+  - ❌ `getPendingOrdersTool` - Test filtering
+  - ❌ `updateOrderStatusTool` - Test status change
+  - ❌ `processRefundTool` - Test approval workflow
+  - ❌ `notifyCustomerTool` - Test notification
+- 🔄 Site tools (4 tools):
+  - ❌ `getSiteStatusTool` - Test status retrieval
+  - ❌ `getSiteAnalyticsTool` - Test analytics
+  - ❌ `toggleMaintenanceModeTool` - Test with/without approval
+  - ❌ `clearCacheTool` - Test cache clear
+- 🔄 Logs tools (2 tools):
+  - ❌ `getAgentLogsTool` - Test with filters
+  - ❌ `getLogByIdTool` - Test with ID and taskId
 
-#### 1.16.3 Agent Integration Testing
-- 🔄 Test ReAct agent:
-  - 🧪 Simple command: "Get order with ID 1"
-  - 🧪 Multi-step: "Close all high-priority tickets"
-  - 🧪 Approval workflow: "Refund order #456"
-- 🔄 Test LMStudio Function Calling agent:
-  - 🧪 Same commands as ReAct
-  - 🧪 Compare success rates
-- ⏳ Test Gemini Native agent:
-  - ❌ Blocked: Implementation in progress
-  - ❌ Test all 21 tools with natural language commands
-  - ❌ Document success rate (target: 90-100%)
+#### 1.16.3 Agent Integration Testing (LMStudio FC with Qwen Coder 32B)
+- 🔄 **PRIMARY FOCUS:** Test with natural language commands
+- 🔄 Test Categories:
 
-#### 1.16.4 WebSocket Testing
+**Basic Commands (Single Tool Execution):**
+  - ❌ "Get order with ID 1"
+  - ❌ "Show me all pending orders"
+  - ❌ "Get ticket #1"
+  - ❌ "Show me all open tickets"
+  - ❌ "Get blog post with slug 'future-of-ai-in-ecommerce'"
+  - ❌ "Show me site status"
+  - ❌ "Give me site analytics"
+
+**Multi-Step Commands:**
+  - ❌ "Close all high-priority tickets" (requires: getOpenTickets → filter → closeTicket for each)
+  - ❌ "Update all pending orders to delivered status" (requires: getPendingOrders → updateOrderStatus for each)
+  - ❌ "Publish all draft blog posts" (requires: getPosts with status=DRAFT → publishBlogPost for each)
+
+**Approval Workflow Commands:**
+  - ❌ "Refund order #1 due to defect" (should return pending_approval)
+  - ❌ "Enable maintenance mode because of urgent updates" (should return pending_approval)
+
+**Error Handling Commands:**
+  - ❌ "Get order with ID 99999" (should gracefully handle not found)
+  - ❌ "Close ticket #99999" (should handle not found)
+  - ❌ "Update order status to INVALID_STATUS" (should handle validation error)
+
+**Complex Commands:**
+  - ❌ "Create a blog post about AI trends, publish it, and show me the result"
+  - ❌ "Find the customer with the most orders and notify them about a sale"
+  - ❌ "Show me all refunded orders and their total amount"
+
+#### 1.16.4 Response Format Validation
+- 🔄 **CRITICAL:** Every agent response must be valid JSON matching schemas in `lib/agent-schemas.ts`
+- 🔄 Validate each response has:
+  - ✅ `status` field (success/error/pending_approval)
+  - ✅ `action` field (tool name)
+  - ✅ `message` field (human-readable summary)
+  - ✅ `data` field (tool-specific payload)
+  - ✅ `logs` array (execution steps)
+  - ✅ `approval` object (if pending_approval)
+  - ✅ `error` object (if error status)
+- 🔄 **Document violations** in separate file: `TESTING_ISSUES.md`
+
+#### 1.16.5 WebSocket Testing
 - ✅ Connect to WebSocket server
 - ✅ Send "ping" message
 - ✅ Send "command" message with prompt
 - ✅ Verify response stream
 - ✅ Test disconnect/reconnect
+- 🔄 **NEW:** Test approval workflow via WebSocket (send approval decision)
+
+#### 1.16.6 Success Criteria for Phase 1 Completion
+**Must achieve ALL of these before moving to Phase 2:**
+- [ ] **90%+ tool success rate** (at least 19 out of 21 tools work correctly)
+- [ ] **100% valid JSON responses** (no parsing errors in frontend)
+- [ ] **Approval workflow tested** (refund + maintenance mode)
+- [ ] **Error handling graceful** (agent doesn't crash on bad input)
+- [ ] **WebSocket stable** (handles reconnection)
+- [ ] **All tests documented** in `TESTING_RESULTS.md`
+- [ ] **Known issues documented** in `TESTING_ISSUES.md`
 
 ---
 
