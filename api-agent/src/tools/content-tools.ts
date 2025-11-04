@@ -77,7 +77,7 @@ export const optimizeSeoTool = new DynamicStructuredTool({
   func: async ({ postId }) => {
     try {
       logger.info(`Getting SEO suggestions for post ${postId}`);
-      const response = await makeRequest('GET', `/posts/${postId}/seo-analysis`);
+      const response = await makeRequest('POST', `/posts/${postId}/seo`, {});
       return JSON.stringify(response);
     } catch (error: any) {
       logger.error('Failed to optimize SEO:', error);

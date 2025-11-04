@@ -15,16 +15,27 @@ import { contentTools } from './content-tools';
 
 /**
  * All available tools for the agent
- * Total: 45 tools (21 original + 24 new)
+ * Total: 57 tools (21 original + 36 new)
+ * 
+ * Breakdown:
+ * - Blog: 8 tools (list, search, get, create, update, publish, trash, getById)
+ * - Tickets: 8 tools (list, search, create, get, getOpen, close, updatePriority, assign)
+ * - Orders: 5 tools (get, getAll, getPending, updateStatus, processRefund, notifyCustomer)
+ * - Site: 4 tools (getStatus, getAnalytics, toggleMaintenance, clearCache)
+ * - Logs: 2 tools (getAgentLogs, getLogById)
+ * - Customers: 7 tools (list, getDetails, getOrders, getTickets, updateInfo, flag, getStats)
+ * - Products: 9 tools (list, search, get, updateStock, setPrice, toggleAvailability, getLowStock, create, bulkUpdate)
+ * - Analytics: 6 tools (getRevenue, getTopProducts, getSatisfaction, getConversion, export, forecast)
+ * - Content: 6 tools (schedule, generate, optimizeSEO, createPage, getAnalytics, bulkSchedule)
  */
 export const allTools = [
-  ...blogTools,       // 5 tools: create, update, publish, trash, get
-  ...ticketTools,     // 5 tools: get, getOpen, close, updatePriority, assign
-  ...orderTools,      // 5 tools: get, getPending, updateStatus, processRefund, notifyCustomer
+  ...blogTools,       // 8 tools: list, search, get, create, update, publish, trash, getById
+  ...ticketTools,     // 8 tools: list, search, create, get, getOpen, close, updatePriority, assign
+  ...orderTools,      // 5 tools: get, getAll, getPending, updateStatus, processRefund, notifyCustomer
   ...siteTools,       // 4 tools: getStatus, getAnalytics, toggleMaintenance, clearCache
   ...logsTools,       // 2 tools: getAgentLogs, getLogById
-  ...customerTools,   // 6 tools: getDetails, getOrders, getTickets, updateInfo, flag, getStats
-  ...productTools,    // 6 tools: updateStock, setPrice, toggleAvailability, getLowStock, create, bulkUpdate
+  ...customerTools,   // 7 tools: list, getDetails, getOrders, getTickets, updateInfo, flag, getStats
+  ...productTools,    // 9 tools: list, search, get, updateStock, setPrice, toggleAvailability, getLowStock, create, bulkUpdate
   ...analyticsTools,  // 6 tools: getRevenue, getTopProducts, getSatisfaction, getConversion, export, forecast
   ...contentTools,    // 6 tools: schedule, generate, optimizeSEO, createPage, getAnalytics, bulkSchedule
 ];

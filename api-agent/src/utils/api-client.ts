@@ -10,7 +10,7 @@ import { ActionAPIResponse } from '../types/agent';
  * Make HTTP request to Next.js API
  */
 export async function makeRequest(
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   endpoint: string,
   body?: any
 ): Promise<any> {

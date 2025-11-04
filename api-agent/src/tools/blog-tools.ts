@@ -5,9 +5,92 @@
 
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { blogAPI } from '../utils/api-client';
+import { blogAPI, makeRequest } from '../utils/api-client';
 import { logger } from '../utils/logger';
 import { parseToolInput } from '../utils/schema-helper';
+
+/**
+ * List all blog posts
+ */
+export const listBlogPostsTool = new DynamicStructuredTool({
+  name: 'list_posts',
+  description: 'Get a list of all blog posts with optional filtering by status',
+  schema: z.object({
+    status: z.enum(['DRAFT', 'PUBLISHED', 'TRASHED']).optional().describe('Filter by post status'),
+    limit: z.number().optional().describe('Maximum number of posts to return (default: 50)'),
+    offset: z.number().optional().describe('Number of posts to skip (for pagination)'),
+  }),
+  func: async ({ status, limit, offset }) => {
+    try {
+      logger.info(`Listing blog posts (status: ${status || 'all'}, limit: ${limit || 50})`);
+      const params = new URLSearchParams();
+      if (status) params.append('status', status);
+      if (limit) params.append('limit', limit.toString());
+      if (offset) params.append('offset', offset.toString());
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await makeRequest('GET', `/posts${queryString}`);
+      return JSON.stringify(response, null, 2);
+    } catch (error) {
+      logger.error('Failed to list blog posts:', error);
+      return JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list blog posts',
+      });
+    }
+  },
+});
+
+/**
+ * Search blog posts
+ */
+export const searchBlogPostsTool = new DynamicStructuredTool({
+  name: 'search_posts',
+  description: 'Search for blog posts by title or content keywords',
+  schema: z.object({
+    query: z.string().describe('Search query (title or content keywords)'),
+    limit: z.number().optional().describe('Maximum number of results (default: 20)'),
+  }),
+  func: async ({ query, limit }) => {
+    try {
+      logger.info(`Searching blog posts: "${query}"`);
+      const params = new URLSearchParams();
+      params.append('search', query);
+      if (limit) params.append('limit', limit.toString());
+      const response = await makeRequest('GET', `/posts?${params.toString()}`);
+      return JSON.stringify(response, null, 2);
+    } catch (error) {
+      logger.error('Failed to search blog posts:', error);
+      return JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search blog posts',
+      });
+    }
+  },
+});
+
+/**
+ * Get blog post by ID
+ */
+export const getBlogPostTool = new DynamicStructuredTool({
+  name: 'get_post',
+  description: 'Get detailed information about a specific blog post by its ID',
+  schema: z.object({
+    postId: z.number().describe('The ID of the blog post'),
+  }),
+  func: async ({ postId }) => {
+    try {
+      logger.info(`Getting blog post details for ID: ${postId}`);
+      const response = await makeRequest('GET', `/posts/${postId}`);
+      return JSON.stringify(response, null, 2);
+    } catch (error) {
+      logger.error('Failed to get blog post:', error);
+      return JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to retrieve blog post details',
+      });
+    }
+  },
+});
 
 /**
  * Create a new blog post
@@ -238,9 +321,12 @@ Returns JSON response:
  * Export all blog tools
  */
 export const blogTools = [
+  listBlogPostsTool,
+  searchBlogPostsTool,
+  getBlogPostTool,
   createBlogPostTool,
   updateBlogPostTool,
   publishBlogPostTool,
   trashBlogPostTool,
-  getBlogPostTool,
+  getBlogPostByIdTool,
 ];

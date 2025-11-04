@@ -2,40 +2,27 @@ import prisma from './lib/prisma';
 
 async function testDB() {
   try {
-    console.log('🔍 Testing database connection...\n');
+    console.log('🔍 Checking database IDs...\n');
     
-    // Get all users
-    const users = await prisma.user.findMany();
-    console.log(`📊 Total users in database: ${users.length}\n`);
+    // Get all products
+    const products = await prisma.product.findMany();
+    console.log(`� Total products in database: ${products.length}\n`);
     
-    if (users.length === 0) {
-      console.log('❌ No users found! Database might be empty.');
+    if (products.length === 0) {
+      console.log('❌ No products found! Database might be empty.');
     } else {
-      console.log('👥 Users:');
-      users.forEach(user => {
-        console.log(`  - ID ${user.id}: ${user.name} (${user.email}) - ${user.role}`);
+      console.log('� Products:');
+      products.forEach(product => {
+        console.log(`  - ID ${product.id}: ${product.name} - $${product.price} (Stock: ${product.stock})`);
       });
     }
     
-    // Test customer query
-    console.log('\n🔍 Testing customer ID 2...');
-    const customer = await prisma.user.findUnique({
-      where: { id: 2 },
-      include: {
-        _count: {
-          select: {
-            orders: true,
-            tickets: true,
-          },
-        },
-      },
+    // Get all posts
+    console.log('\n� Posts:');
+    const posts = await prisma.post.findMany();
+    posts.forEach(post => {
+      console.log(`  - ID ${post.id}: ${post.title} - ${post.status}`);
     });
-    
-    if (customer) {
-      console.log('✅ Customer found:', JSON.stringify(customer, null, 2));
-    } else {
-      console.log('❌ Customer ID 2 not found');
-    }
     
   } catch (error) {
     console.error('❌ Database error:', error);

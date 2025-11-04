@@ -9,6 +9,35 @@ import { makeRequest } from '../utils/api-client';
 import { logger } from '../utils/logger';
 
 /**
+ * List all customers
+ */
+export const listCustomersTool = new DynamicStructuredTool({
+  name: 'list_customers',
+  description: 'Get a list of all customers in the system with their basic information (id, name, email, role)',
+  schema: z.object({
+    limit: z.number().optional().describe('Maximum number of customers to return (default: 50)'),
+    offset: z.number().optional().describe('Number of customers to skip (for pagination)'),
+  }),
+  func: async ({ limit, offset }) => {
+    try {
+      logger.info(`Listing customers (limit: ${limit || 50}, offset: ${offset || 0})`);
+      const params = new URLSearchParams();
+      if (limit) params.append('limit', limit.toString());
+      if (offset) params.append('offset', offset.toString());
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await makeRequest('GET', `/customers${queryString}`);
+      return JSON.stringify(response);
+    } catch (error: any) {
+      logger.error('Failed to list customers:', error);
+      return JSON.stringify({
+        success: false,
+        error: error.message || 'Failed to retrieve customers',
+      });
+    }
+  },
+});
+
+/**
  * Get customer details by ID
  */
 export const getCustomerDetailsTool = new DynamicStructuredTool({
@@ -171,6 +200,7 @@ export const getCustomerStatsTool = new DynamicStructuredTool({
 
 // Export all customer tools
 export const customerTools = [
+  listCustomersTool,
   getCustomerDetailsTool,
   getCustomerOrdersTool,
   getCustomerTicketsTool,

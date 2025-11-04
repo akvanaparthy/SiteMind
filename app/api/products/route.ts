@@ -13,7 +13,9 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get('featured') === 'true';
     const active = searchParams.get('active');
     const limit = searchParams.get('limit');
+    const offset = searchParams.get('offset');
     const slug = searchParams.get('slug');
+    const search = searchParams.get('search');
 
     // Get single product by slug
     if (slug) {
@@ -31,21 +33,40 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: product });
     }
 
+    // Build where clause for filters and search
+    const where: any = {
+      ...(category && { category }),
+      ...(featured && { featured: true }),
+      ...(active !== null && { active: active === 'true' }),
+    };
+
+    // Add text search if provided
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { category: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
     // Get multiple products with filters
     const products = await prisma.product.findMany({
-      where: {
-        ...(category && { category }),
-        ...(featured && { featured: true }),
-        ...(active !== null && { active: active === 'true' }),
-      },
+      where,
       ...(limit && { take: parseInt(limit) }),
+      ...(offset && { skip: parseInt(offset) }),
       orderBy: { createdAt: 'desc' },
     });
 
+    // Get total count for pagination
+    const totalCount = await prisma.product.count({ where });
+
     return NextResponse.json({
       success: true,
-      data: products,
+      action: 'listProducts',
+      data: { products },
       count: products.length,
+      totalCount,
+      timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
     console.error('[API] Error fetching products:', error);

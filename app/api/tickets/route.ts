@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset');
     const orderBy = searchParams.get('orderBy') as 'asc' | 'desc' | null;
     const openOnly = searchParams.get('openOnly') === 'true' || type === 'getOpen';
+    const search = searchParams.get('search');
 
     // Get open tickets if requested
     if (openOnly) {
@@ -74,21 +75,55 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: ticket });
     }
 
-    // Get multiple tickets with filters
-    const tickets = await getTickets({
+    // Build where clause for search
+    let where: any = {
       ...(status && { status }),
       ...(priority && { priority }),
       ...(customerId && { customerId: parseInt(customerId) }),
       ...(assignedTo && { assignedTo: parseInt(assignedTo) }),
-      ...(limit && { limit: parseInt(limit) }),
-      ...(offset && { offset: parseInt(offset) }),
-      ...(orderBy && { orderBy }),
-    });
+    };
+
+    // Add text search if provided
+    if (search) {
+      where.OR = [
+        { subject: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Get tickets with filters or search
+    const tickets = search 
+      ? await prisma.ticket.findMany({
+          where,
+          include: {
+            customer: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+          ...(limit && { take: parseInt(limit) }),
+          ...(offset && { skip: parseInt(offset) }),
+          orderBy: { createdAt: orderBy === 'asc' ? 'asc' : 'desc' },
+        })
+      : await getTickets({
+          ...(status && { status }),
+          ...(priority && { priority }),
+          ...(customerId && { customerId: parseInt(customerId) }),
+          ...(assignedTo && { assignedTo: parseInt(assignedTo) }),
+          ...(limit && { limit: parseInt(limit) }),
+          ...(offset && { offset: parseInt(offset) }),
+          ...(orderBy && { orderBy }),
+        });
 
     return NextResponse.json({
       success: true,
-      data: tickets,
+      action: 'listTickets',
+      data: { tickets },
       count: tickets.length,
+      timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
     console.error('[API] Error fetching tickets:', error);

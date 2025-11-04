@@ -78,7 +78,7 @@ export const getCustomerSatisfactionTool = new DynamicStructuredTool({
   func: async ({ period = 30 }) => {
     try {
       logger.info(`Getting customer satisfaction score for last ${period} days`);
-      const response = await makeRequest('GET', `/analytics/customer-satisfaction?period=${period}`);
+      const response = await makeRequest('GET', `/analytics/csat?period=${period}`);
       return JSON.stringify(response);
     } catch (error: any) {
       logger.error('Failed to get customer satisfaction:', error);
@@ -129,11 +129,12 @@ export const exportReportTool = new DynamicStructuredTool({
   func: async ({ reportType, format, startDate, endDate }) => {
     try {
       logger.info(`Exporting ${reportType} report as ${format}`);
-      const params = new URLSearchParams({ reportType, format });
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
-      
-      const response = await makeRequest('POST', `/analytics/export?${params.toString()}`);
+      const response = await makeRequest('POST', `/analytics/export`, {
+        reportType,
+        format,
+        startDate,
+        endDate,
+      });
       return JSON.stringify(response);
     } catch (error: any) {
       logger.error('Failed to export report:', error);

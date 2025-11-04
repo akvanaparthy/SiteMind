@@ -9,6 +9,7 @@ import {
   deleteBlogPost,
 } from '@/lib/actions/blog';
 import { PostStatus } from '@prisma/client';
+import prisma from '@/lib/prisma';
 
 /**
  * GET /api/posts
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
     const orderBy = searchParams.get('orderBy') as 'asc' | 'desc' | null;
+    const search = searchParams.get('search');
 
     // Handle type=get for agent tools compatibility
     if (type === 'get' && id) {
@@ -56,19 +58,52 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: post });
     }
 
-    // Get multiple posts with filters
-    const posts = await getBlogPosts({
+    // Build where clause for search
+    let where: any = {
       ...(status && { status }),
       ...(authorId && { authorId: parseInt(authorId) }),
-      ...(limit && { limit: parseInt(limit) }),
-      ...(offset && { offset: parseInt(offset) }),
-      ...(orderBy && { orderBy }),
-    });
+    };
+
+    // Add text search if provided
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } },
+        { excerpt: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Get posts with filters or search
+    const posts = search
+      ? await prisma.post.findMany({
+          where,
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+          ...(limit && { take: parseInt(limit) }),
+          ...(offset && { skip: parseInt(offset) }),
+          orderBy: { createdAt: orderBy === 'asc' ? 'asc' : 'desc' },
+        })
+      : await getBlogPosts({
+          ...(status && { status }),
+          ...(authorId && { authorId: parseInt(authorId) }),
+          ...(limit && { limit: parseInt(limit) }),
+          ...(offset && { offset: parseInt(offset) }),
+          ...(orderBy && { orderBy }),
+        });
 
     return NextResponse.json({
       success: true,
-      data: posts,
+      action: 'listPosts',
+      data: { posts },
       count: posts.length,
+      timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
     console.error('[API] Error fetching posts:', error);

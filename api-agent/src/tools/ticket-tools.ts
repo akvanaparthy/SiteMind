@@ -5,9 +5,132 @@
 
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { ticketAPI } from '../utils/api-client';
+import { ticketAPI, makeRequest } from '../utils/api-client';
 import { logger } from '../utils/logger';
 import { parseToolInput } from '../utils/schema-helper';
+
+/**
+ * List all tickets
+ */
+export const listTicketsTool = new DynamicStructuredTool({
+  name: 'list_tickets',
+  description: `Retrieve all support tickets with optional filters. This tool requires NO parameters, but you can filter by status or priority.
+  
+Returns JSON response:
+{
+  "success": true,
+  "action": "listTickets",
+  "data": {
+    "tickets": [{ "id": 1, "subject": "...", "status": "...", "priority": "...", ... }],
+    "count": 10
+  }
+}`,
+  schema: z.object({
+    status: z.enum(['OPEN', 'CLOSED']).optional().describe('Filter by status (OPEN or CLOSED)'),
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional().describe('Filter by priority'),
+    limit: z.number().optional().describe('Maximum number of tickets to return'),
+  }),
+  func: async ({ status, priority, limit }) => {
+    try {
+      logger.info(`Listing tickets (status: ${status || 'all'}, priority: ${priority || 'all'})`);
+      const params = new URLSearchParams();
+      if (status) params.append('status', status);
+      if (priority) params.append('priority', priority);
+      if (limit) params.append('limit', limit.toString());
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await makeRequest('GET', `/tickets${queryString}`);
+      return JSON.stringify(response, null, 2);
+    } catch (error) {
+      logger.error('Tool: list_tickets - Failed', error);
+      return JSON.stringify({
+        success: false,
+        action: 'listTickets',
+        error: {
+          code: 'TOOL_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
+    }
+  },
+});
+
+/**
+ * Create a new support ticket
+ */
+export const createTicketTool = new DynamicStructuredTool({
+  name: 'create_ticket',
+  description: `Create a new support ticket for a customer.
+  
+Returns JSON response:
+{
+  "success": true,
+  "action": "createTicket",
+  "message": "Ticket created successfully",
+  "data": {
+    "ticket": { "id": 6, "ticketId": "...", "subject": "...", "status": "OPEN", ... }
+  }
+}`,
+  schema: z.object({
+    customerId: z.number().describe('ID of the customer creating the ticket'),
+    subject: z.string().describe('Ticket subject/title'),
+    description: z.string().describe('Detailed description of the issue'),
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional().describe('Ticket priority (defaults to MEDIUM)'),
+  }),
+  func: async ({ customerId, subject, description, priority }) => {
+    try {
+      logger.info(`Creating ticket for customer ${customerId}: ${subject}`);
+      const response = await makeRequest('POST', '/tickets', {
+        customerId,
+        subject,
+        description,
+        priority: priority || 'MEDIUM',
+      });
+      return JSON.stringify(response, null, 2);
+    } catch (error) {
+      logger.error('Tool: create_ticket - Failed', error);
+      return JSON.stringify({
+        success: false,
+        action: 'createTicket',
+        error: {
+          code: 'TOOL_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
+    }
+  },
+});
+
+/**
+ * Search tickets
+ */
+export const searchTicketsTool = new DynamicStructuredTool({
+  name: 'search_tickets',
+  description: `Search for tickets by subject, description keywords, or customer. Returns matching tickets.`,
+  schema: z.object({
+    query: z.string().describe('Search query (subject keywords, description, or customer name)'),
+    limit: z.number().optional().describe('Maximum number of results (default: 20)'),
+  }),
+  func: async ({ query, limit }) => {
+    try {
+      logger.info(`Searching tickets: "${query}"`);
+      const params = new URLSearchParams();
+      params.append('search', query);
+      if (limit) params.append('limit', limit.toString());
+      const response = await makeRequest('GET', `/tickets?${params.toString()}`);
+      return JSON.stringify(response, null, 2);
+    } catch (error) {
+      logger.error('Tool: search_tickets - Failed', error);
+      return JSON.stringify({
+        success: false,
+        action: 'searchTickets',
+        error: {
+          code: 'TOOL_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
+    }
+  },
+});
 
 /**
  * Get a ticket by ID
@@ -227,6 +350,9 @@ Returns JSON response:
  * Export all ticket tools
  */
 export const ticketTools = [
+  listTicketsTool,
+  searchTicketsTool,
+  createTicketTool,
   getTicketTool,
   getOpenTicketsTool,
   closeTicketTool,

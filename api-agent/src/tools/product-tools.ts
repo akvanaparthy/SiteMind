@@ -9,6 +9,89 @@ import { makeRequest } from '../utils/api-client';
 import { logger } from '../utils/logger';
 
 /**
+ * List all products
+ */
+export const listProductsTool = new DynamicStructuredTool({
+  name: 'list_products',
+  description: 'Get a list of all products in the store with their details (name, price, stock, category)',
+  schema: z.object({
+    limit: z.number().optional().describe('Maximum number of products to return (default: 50)'),
+    offset: z.number().optional().describe('Number of products to skip (for pagination)'),
+    category: z.string().optional().describe('Filter by category (e.g., "Electronics", "Fashion")'),
+  }),
+  func: async ({ limit, offset, category }) => {
+    try {
+      logger.info(`Listing products (limit: ${limit || 50}, offset: ${offset || 0}, category: ${category || 'all'})`);
+      const params = new URLSearchParams();
+      if (limit) params.append('limit', limit.toString());
+      if (offset) params.append('offset', offset.toString());
+      if (category) params.append('category', category);
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await makeRequest('GET', `/products${queryString}`);
+      return JSON.stringify(response);
+    } catch (error: any) {
+      logger.error('Failed to list products:', error);
+      return JSON.stringify({
+        success: false,
+        error: error.message || 'Failed to list products',
+      });
+    }
+  },
+});
+
+/**
+ * Search products by name or description
+ */
+export const searchProductsTool = new DynamicStructuredTool({
+  name: 'search_products',
+  description: 'Search for products by name, description keywords, or category. Returns matching products.',
+  schema: z.object({
+    query: z.string().describe('Search query (product name, keywords, or category)'),
+    limit: z.number().optional().describe('Maximum number of results (default: 20)'),
+  }),
+  func: async ({ query, limit }) => {
+    try {
+      logger.info(`Searching products: "${query}"`);
+      const params = new URLSearchParams();
+      params.append('search', query);
+      if (limit) params.append('limit', limit.toString());
+      const response = await makeRequest('GET', `/products?${params.toString()}`);
+      return JSON.stringify(response);
+    } catch (error: any) {
+      logger.error('Failed to search products:', error);
+      return JSON.stringify({
+        success: false,
+        error: error.message || 'Failed to search products',
+      });
+    }
+  },
+});
+
+/**
+ * Get product details by ID
+ */
+export const getProductTool = new DynamicStructuredTool({
+  name: 'get_product',
+  description: 'Get detailed information about a specific product by its ID',
+  schema: z.object({
+    productId: z.number().describe('The ID of the product'),
+  }),
+  func: async ({ productId }) => {
+    try {
+      logger.info(`Getting product details for ID: ${productId}`);
+      const response = await makeRequest('GET', `/products/${productId}`);
+      return JSON.stringify(response);
+    } catch (error: any) {
+      logger.error('Failed to get product:', error);
+      return JSON.stringify({
+        success: false,
+        error: error.message || 'Failed to retrieve product details',
+      });
+    }
+  },
+});
+
+/**
  * Update product stock quantity
  */
 export const updateProductStockTool = new DynamicStructuredTool({
@@ -22,7 +105,7 @@ export const updateProductStockTool = new DynamicStructuredTool({
   func: async ({ productId, quantity, mode = 'set' }) => {
     try {
       logger.info(`Updating stock for product ${productId}: ${mode} ${quantity}`);
-      const response = await makeRequest('PUT', `/products/${productId}/stock`, {
+      const response = await makeRequest('PATCH', `/products/${productId}/stock`, {
         quantity,
         mode,
       });
@@ -49,8 +132,8 @@ export const setProductPriceTool = new DynamicStructuredTool({
   }),
   func: async ({ productId, price }) => {
     try {
-      logger.info(`Setting price for product ${productId} to $${price}`);
-      const response = await makeRequest('PUT', `/products/${productId}/price`, { price });
+      logger.info(`Updating price for product ${productId}: $${price}`);
+      const response = await makeRequest('PATCH', `/products/${productId}/price`, { price });
       return JSON.stringify(response);
     } catch (error: any) {
       logger.error('Failed to set product price:', error);
@@ -75,7 +158,7 @@ export const toggleProductAvailabilityTool = new DynamicStructuredTool({
   func: async ({ productId, active }) => {
     try {
       logger.info(`Setting product ${productId} active status to ${active}`);
-      const response = await makeRequest('PUT', `/products/${productId}/availability`, { active });
+      const response = await makeRequest('PATCH', `/products/${productId}/availability`, { active });
       return JSON.stringify(response);
     } catch (error: any) {
       logger.error('Failed to toggle product availability:', error);
@@ -128,12 +211,15 @@ export const createProductTool = new DynamicStructuredTool({
   func: async ({ name, description, price, stock, category, featured }) => {
     try {
       logger.info(`Creating new product: ${name}`);
+      // Auto-generate slug from name
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       const response = await makeRequest('POST', '/products', {
         name,
+        slug,
         description,
         price,
         stock,
-        category,
+        category: category || 'General',
         featured: featured || false,
         active: true,
       });
@@ -153,11 +239,11 @@ export const createProductTool = new DynamicStructuredTool({
  */
 export const bulkUpdateProductsTool = new DynamicStructuredTool({
   name: 'bulk_update_products',
-  description: 'Update multiple products at once (e.g., apply discount to category, adjust all stock)',
+  description: 'Update multiple products at once (e.g., set price, update stock, toggle availability)',
   schema: z.object({
-    action: z.enum(['adjust_price', 'adjust_stock', 'set_category', 'toggle_active']).describe('Action to perform'),
+    action: z.enum(['update_price', 'update_stock', 'toggle_availability', 'mark_featured', 'unmark_featured']).describe('Action to perform'),
     productIds: z.array(z.number()).describe('Array of product IDs to update'),
-    value: z.union([z.string(), z.number(), z.boolean()]).describe('Value for the action (price multiplier, stock adjustment, category name, or boolean)'),
+    value: z.union([z.string(), z.number(), z.boolean()]).optional().describe('Value for the action (price, stock quantity, or active status)'),
   }),
   func: async ({ action, productIds, value }) => {
     try {
@@ -180,6 +266,9 @@ export const bulkUpdateProductsTool = new DynamicStructuredTool({
 
 // Export all product tools
 export const productTools = [
+  listProductsTool,
+  searchProductsTool,
+  getProductTool,
   updateProductStockTool,
   setProductPriceTool,
   toggleProductAvailabilityTool,
