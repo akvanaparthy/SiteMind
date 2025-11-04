@@ -329,7 +329,7 @@ export default function AdminProductsPage() {
 
       {/* Create/Edit Modal */}
       <Modal
-        open={showModal}
+        isOpen={showModal}
         onClose={() => setShowModal(false)}
         title={editingProduct ? 'Edit Product' : 'Create Product'}
       >
@@ -410,7 +410,7 @@ export default function AdminProductsPage() {
 
       {/* Delete Confirmation Modal */}
       <Modal
-        open={showDeleteConfirm !== null}
+        isOpen={showDeleteConfirm !== null}
         onClose={() => setShowDeleteConfirm(null)}
         title="Delete Product"
       >
