@@ -10,8 +10,8 @@ import { ActionAPIResponse } from '../types/agent';
  * Make HTTP request to Next.js API
  */
 export async function makeRequest(
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   endpoint: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
   body?: any
 ): Promise<any> {
   const config = getConfig();
@@ -57,77 +57,77 @@ export async function makeRequest(
  */
 export const blogAPI = {
   create: (data: { title: string; content: string; excerpt?: string; authorId: number }) =>
-    makeRequest('/posts', 'POST', { type: 'create', ...data }),
+    makeRequest('POST', '/posts', { type: 'create', ...data }),
 
   update: (data: { id: number; title?: string; content?: string; excerpt?: string }) =>
-    makeRequest('/posts', 'PUT', { type: 'update', ...data }),
+    makeRequest('PUT', '/posts', { type: 'update', ...data }),
 
-  publish: (id: number) => makeRequest('/posts', 'PUT', { type: 'publish', id }),
+  publish: (id: number) => makeRequest('PUT', '/posts', { type: 'publish', id }),
 
-  trash: (id: number) => makeRequest('/posts', 'PUT', { type: 'trash', id }),
+  trash: (id: number) => makeRequest('PUT', '/posts', { type: 'trash', id }),
 
-  get: (id: number) => makeRequest(`/posts?type=get&id=${id}`, 'GET'),
+  get: (id: number) => makeRequest('GET', `/posts?type=get&id=${id}`),
 };
 
 /**
  * Ticket Actions
  */
 export const ticketAPI = {
-  get: (id: number) => makeRequest(`/tickets?type=get&id=${id}`, 'GET'),
+  get: (id: number) => makeRequest('GET', `/tickets?type=get&id=${id}`),
 
-  getOpen: () => makeRequest('/tickets?type=getOpen', 'GET'),
+  getOpen: () => makeRequest('GET', '/tickets?type=getOpen'),
 
   close: (id: number, resolution?: string) =>
-    makeRequest('/tickets', 'PUT', { type: 'close', id, resolution }),
+    makeRequest('PUT', '/tickets', { type: 'close', id, resolution }),
 
   updatePriority: (id: number, priority: 'LOW' | 'MEDIUM' | 'HIGH') =>
-    makeRequest('/tickets', 'PUT', { type: 'updatePriority', id, priority }),
+    makeRequest('PUT', '/tickets', { type: 'updatePriority', id, priority }),
 
   assign: (id: number, assigneeId: number) =>
-    makeRequest('/tickets', 'PUT', { type: 'assign', id, assigneeId }),
+    makeRequest('PUT', '/tickets', { type: 'assign', id, assigneeId }),
 };
 
 /**
  * Order Actions
  */
 export const orderAPI = {
-  get: (id: number) => makeRequest(`/orders?type=get&id=${id}`, 'GET'),
+  get: (id: number) => makeRequest('GET', `/orders?type=get&id=${id}`),
 
-  getAll: () => makeRequest('/orders', 'GET'),
+  getAll: () => makeRequest('GET', '/orders'),
 
-  getPending: () => makeRequest('/orders?type=getPending', 'GET'),
+  getPending: () => makeRequest('GET', '/orders?type=getPending'),
 
   updateStatus: (id: number, status: 'PENDING' | 'DELIVERED' | 'REFUNDED') =>
-    makeRequest('/orders', 'PUT', { type: 'updateStatus', id, status }),
+    makeRequest('PUT', '/orders', { type: 'updateStatus', id, status }),
 
   processRefund: (id: number, reason: string) =>
-    makeRequest('/orders', 'POST', { type: 'refund', id, reason }),
+    makeRequest('POST', '/orders', { type: 'refund', id, reason }),
 
   notifyCustomer: (id: number, subject: string, message: string) =>
-    makeRequest('/orders', 'POST', { type: 'notify', id, subject, message }),
+    makeRequest('POST', '/orders', { type: 'notify', id, subject, message }),
 };
 
 /**
  * Site Actions
  */
 export const siteAPI = {
-  getStatus: () => makeRequest('/site?type=status', 'GET'),
+  getStatus: () => makeRequest('GET', '/site?type=status'),
 
-  getAnalytics: () => makeRequest('/site?type=analytics', 'GET'),
+  getAnalytics: () => makeRequest('GET', '/site?type=analytics'),
 
   toggleMaintenance: (enabled: boolean) =>
-    makeRequest('/site', 'PUT', { type: 'maintenance', enabled }),
+    makeRequest('PUT', '/site', { type: 'maintenance', enabled }),
 
-  clearCache: () => makeRequest('/site', 'POST', { type: 'clearCache' }),
+  clearCache: () => makeRequest('POST', '/site', { type: 'clearCache' }),
 };
 
 /**
  * Agent Logs
  */
 export const logsAPI = {
-  getAll: (limit?: number) => makeRequest(`/logs${limit ? `?limit=${limit}` : ''}`, 'GET'),
+  getAll: (limit?: number) => makeRequest('GET', `/logs${limit ? `?limit=${limit}` : ''}`),
 
-  get: (id: number) => makeRequest(`/logs?id=${id}`, 'GET'),
+  get: (id: number) => makeRequest('GET', `/logs?id=${id}`),
 };
 
 /**

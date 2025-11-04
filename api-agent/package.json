@@ -11,6 +11,8 @@
     "test:tools": "tsx src/tests/test-all-tools-manual.ts",
     "test:individual": "tsx src/tests/test-individual-tool.ts",
     "test:memory": "tsx src/tests/test-pinecone.ts",
+    "test:new": "tsx src/tests/test-new-tools.ts",
+    "test:agent": "tsx src/tests/test-via-agent.ts",
     "lint": "eslint src --ext .ts"
   },
   "keywords": [
