@@ -6,6 +6,8 @@
 import { getConfig, validateConfig } from './utils/config';
 import { logger } from './utils/logger';
 import { wsServer } from './server/websocket';
+import { initPinecone, isPineconeAvailable, closePinecone } from './utils/pinecone-client';
+import { getMemoryStats } from './utils/memory-store';
 
 /**
  * Main startup function
@@ -31,6 +33,24 @@ async function start() {
       nextjsAPI: config.nextjsApiUrl,
     });
 
+    // Initialize Pinecone if configured
+    if (isPineconeAvailable()) {
+      logger.info('\n🧠 Initializing Pinecone memory...');
+      await initPinecone();
+      const memoryStats = await getMemoryStats();
+      if (memoryStats.enabled) {
+        logger.info('✅ Pinecone initialized', {
+          index: memoryStats.indexName,
+          namespace: memoryStats.namespace,
+          vectors: memoryStats.totalVectors,
+        });
+      } else {
+        logger.warn('⚠️  Pinecone configured but initialization failed');
+      }
+    } else {
+      logger.info('\n🧠 Pinecone memory: DISABLED (not configured)');
+    }
+
     // Start WebSocket server (with HTTP endpoints)
     logger.info('\n🌐 Starting WebSocket server with HTTP API...');
     await wsServer.start();
@@ -42,6 +62,7 @@ async function start() {
     logger.info(`   - Claude Model: ${config.claude.modelName}`);
     logger.info(`   - Next.js API: ${config.nextjsApiUrl}`);
     logger.info(`   - Log Level: ${config.logLevel}`);
+    logger.info(`   - Memory: ${isPineconeAvailable() ? 'ENABLED (Pinecone)' : 'DISABLED'}`);
     
     // Periodic health check
     startHealthCheck();
@@ -76,6 +97,13 @@ async function shutdown() {
     logger.info('✅ WebSocket server stopped');
   } catch (error) {
     logger.error('Error stopping WebSocket server', error);
+  }
+
+  try {
+    await closePinecone();
+    logger.info('✅ Pinecone connection closed');
+  } catch (error) {
+    logger.error('Error closing Pinecone', error);
   }
 
   logger.info('👋 Agent Service stopped');

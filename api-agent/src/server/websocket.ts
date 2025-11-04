@@ -44,8 +44,8 @@ export class WebSocketServer {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           status: 'online',
-          provider: config.provider,
-          model: config.model,
+          provider: config.llmProvider,
+          model: config.claude.modelName,
           timestamp: new Date().toISOString(),
         }));
         return;

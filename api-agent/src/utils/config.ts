@@ -31,6 +31,15 @@ export function loadConfig(): AgentConfig {
       maxTokens: parseInt(process.env.CLAUDE_MAX_TOKENS || '4096', 10),
     },
     
+    // Pinecone configuration (optional)
+    pinecone: process.env.PINECONE_API_KEY ? {
+      apiKey: process.env.PINECONE_API_KEY,
+      indexName: process.env.PINECONE_INDEX_NAME || 'sitemind-agent-memory',
+      namespace: process.env.PINECONE_NAMESPACE || 'agent-memory',
+      dimensions: parseInt(process.env.PINECONE_DIMENSIONS || '1536', 10),
+      metric: (process.env.PINECONE_METRIC || 'cosine') as 'cosine' | 'euclidean' | 'dotproduct',
+    } : undefined,
+    
     nextjsApiUrl: process.env.NEXTJS_API_URL || 'http://localhost:3000/api',
     nextjsApiTimeout: parseInt(process.env.NEXTJS_API_TIMEOUT || '30000', 10),
     

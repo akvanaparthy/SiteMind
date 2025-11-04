@@ -98,6 +98,15 @@ export interface ClaudeConfig {
   maxTokens: number;
 }
 
+// Pinecone configuration
+export interface PineconeConfig {
+  apiKey: string;
+  indexName: string;
+  namespace: string;
+  dimensions: number;
+  metric: 'cosine' | 'euclidean' | 'dotproduct';
+}
+
 // Action API Response (from Next.js backend)
 export interface ActionAPIResponse {
   success: boolean;
@@ -129,6 +138,7 @@ export interface AgentConfig {
   host: string;
   llmProvider: LLMProvider;
   claude: ClaudeConfig;
+  pinecone?: PineconeConfig;
   nextjsApiUrl: string;
   nextjsApiTimeout: number;
   wsPath: string;

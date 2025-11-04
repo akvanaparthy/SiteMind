@@ -30,8 +30,8 @@ app.get('/health', (req: Request, res: Response) => {
 app.get('/status', (req: Request, res: Response) => {
   res.json({
     status: 'online',
-    provider: config.provider,
-    model: config.model,
+    provider: config.llmProvider,
+    model: config.claude.modelName,
     timestamp: new Date().toISOString(),
   });
 });

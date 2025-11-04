@@ -13,7 +13,10 @@ export interface Product {
   description: string
   price: number
   stock: number
-  image: string | null
+  category: string | null
+  images: any | null
+  featured: boolean
+  active: boolean
   createdAt: string
   updatedAt: string
 }

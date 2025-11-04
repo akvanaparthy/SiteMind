@@ -20,7 +20,7 @@ export default function AdminProductsPage() {
   const { data: response, isLoading, mutate } = useProducts()
   const products = response?.data || []
   const productActions = useProductActions()
-  const { showToast } = useToast()
+  const { success, error: showError } = useToast()
 
   const [showModal, setShowModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -74,7 +74,7 @@ export default function AdminProductsPage() {
 
       // Validation
       if (!formData.name || !formData.slug || !formData.description || !formData.price || !formData.stock) {
-        showToast('Please fill in all required fields', 'error')
+        showError('Please fill in all required fields')
         return
       }
 
@@ -90,7 +90,7 @@ export default function AdminProductsPage() {
           featured: formData.featured,
           active: formData.active,
         })
-        showToast('Product updated successfully', 'success')
+        success('Product updated successfully')
       } else {
         // Create
         await productActions.create({
@@ -104,13 +104,13 @@ export default function AdminProductsPage() {
           featured: formData.featured,
           active: formData.active,
         })
-        showToast('Product created successfully', 'success')
+        success('Product created successfully')
       }
 
       setShowModal(false)
       mutate()
     } catch (error: any) {
-      showToast(error.message || 'Failed to save product', 'error')
+      showError(error.message || 'Failed to save product')
     } finally {
       setIsSubmitting(false)
     }
@@ -119,18 +119,18 @@ export default function AdminProductsPage() {
   const handleDelete = async (id: number) => {
     try {
       await productActions.delete(id)
-      showToast('Product deleted successfully', 'success')
+      success('Product deleted successfully')
       setShowDeleteConfirm(null)
       mutate()
     } catch (error: any) {
-      showToast(error.message || 'Failed to delete product', 'error')
+      showError(error.message || 'Failed to delete product')
     }
   }
 
   const columns = [
     {
       key: 'name',
-      label: 'Product',
+      header: 'Product',
       render: (row: Product) => (
         <div>
           <div className="font-medium text-slate-900 dark:text-slate-100">
@@ -144,7 +144,7 @@ export default function AdminProductsPage() {
     },
     {
       key: 'category',
-      label: 'Category',
+      header: 'Category',
       render: (row: Product) => (
         <span className="text-slate-700 dark:text-slate-300">
           {row.category || 'Uncategorized'}
@@ -153,7 +153,7 @@ export default function AdminProductsPage() {
     },
     {
       key: 'price',
-      label: 'Price',
+      header: 'Price',
       render: (row: Product) => (
         <span className="font-semibold text-slate-900 dark:text-slate-100">
           ${row.price.toFixed(2)}
@@ -162,7 +162,7 @@ export default function AdminProductsPage() {
     },
     {
       key: 'stock',
-      label: 'Stock',
+      header: 'Stock',
       render: (row: Product) => (
         <div>
           <span className={`font-medium ${row.stock > 0 ? 'text-success-600 dark:text-success-400' : 'text-danger-600 dark:text-danger-400'}`}>
@@ -176,7 +176,7 @@ export default function AdminProductsPage() {
     },
     {
       key: 'status',
-      label: 'Status',
+      header: 'Status',
       render: (row: Product) => (
         <div className="flex items-center gap-2">
           <Badge variant={row.active ? 'success' : 'default'} dot>
@@ -190,7 +190,7 @@ export default function AdminProductsPage() {
     },
     {
       key: 'actions',
-      label: 'Actions',
+      header: 'Actions',
       render: (row: Product) => (
         <div className="flex items-center gap-2">
           <Button
@@ -308,18 +308,13 @@ export default function AdminProductsPage() {
             </div>
           ) : products?.length === 0 ? (
             <EmptyState
-              icon={<Package className="w-12 h-12" />}
+              icon={Package}
               title="No products yet"
               description="Get started by adding your first product"
-              action={
-                <Button
-                  variant="primary"
-                  icon={<Plus className="w-5 h-5" />}
-                  onClick={handleOpenCreate}
-                >
-                  Add Product
-                </Button>
-              }
+              action={{
+                label: 'Add Product',
+                onClick: handleOpenCreate,
+              }}
             />
           ) : (
             <Table columns={columns} data={products || []} />
@@ -384,12 +379,12 @@ export default function AdminProductsPage() {
           <div className="flex items-center gap-6">
             <Switch
               label="Featured Product"
-              checked={formData.featured}
+              enabled={formData.featured}
               onChange={(checked) => setFormData({ ...formData, featured: checked })}
             />
             <Switch
               label="Active"
-              checked={formData.active}
+              enabled={formData.active}
               onChange={(checked) => setFormData({ ...formData, active: checked })}
             />
           </div>

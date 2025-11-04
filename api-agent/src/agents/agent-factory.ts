@@ -1,12 +1,19 @@
 /**
  * Agent Factory for Claude
- * Creates Claude Haiku 3 agent instances
+ * Creates Claude Haiku 3 agent instances with memory support
  */
 
 import { getConfig } from '../utils/config';
 import { logger } from '../utils/logger';
 import { createClaudeAgent } from './claude-agent';
 import { AgentLogSession } from '../utils/agent-log-client';
+import { 
+  storeMemory, 
+  retrieveRelevantMemories, 
+  formatMemoriesForPrompt,
+} from '../utils/memory-store';
+import { isPineconeAvailable } from '../utils/pinecone-client';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Create a Claude agent
@@ -22,6 +29,7 @@ export async function createAgent(): Promise<any> {
   logger.info('📡 Provider: CLAUDE');
   logger.info('🔧 Mode: Claude Haiku 3 (Anthropic Messages API)');
   logger.info(`📋 Model: ${config.claude.modelName}`);
+  logger.info(`🧠 Memory: ${isPineconeAvailable() ? 'ENABLED (Pinecone)' : 'DISABLED'}`);
   logger.info('═══════════════════════════════════════════════════');
 
   return await createClaudeAgent();
@@ -70,6 +78,19 @@ export async function executeCommand(
   logger.info('');
 
   try {
+    // Retrieve relevant memories if Pinecone is available
+    let memoryContext = '';
+    if (isPineconeAvailable()) {
+      logger.info('🧠 Retrieving relevant memories from Pinecone...');
+      const relevantMemories = await retrieveRelevantMemories(prompt, 3);
+      if (relevantMemories.length > 0) {
+        memoryContext = formatMemoriesForPrompt(relevantMemories);
+        logger.info(`📚 Found ${relevantMemories.length} relevant past interactions`);
+      } else {
+        logger.info('📚 No relevant memories found');
+      }
+    }
+
     // Build conversation context if history exists
     let fullPrompt = prompt;
     if (history && history.length > 0) {
@@ -83,6 +104,11 @@ export async function executeCommand(
       
       fullPrompt = `Previous conversation context:\n${contextMessages}\n\nCurrent request: ${prompt}`;
       logger.info('💭 Added conversation context');
+    }
+
+    // Add memory context if available
+    if (memoryContext) {
+      fullPrompt = `${memoryContext}\n\n${fullPrompt}`;
     }
 
     // Start logging to database
@@ -154,6 +180,31 @@ export async function executeCommand(
       // Mark as complete
       const summary = formattedOutput.substring(0, 100) + (formattedOutput.length > 100 ? '...' : '');
       await logSession.complete(summary);
+
+      // Store interaction in memory if Pinecone is available
+      if (isPineconeAvailable()) {
+        const actions = toolCalls.map((tc: any) => tc.tool);
+        const memoryId = uuidv4();
+        
+        logger.info('🧠 Storing interaction in Pinecone memory...');
+        const stored = await storeMemory({
+          id: memoryId,
+          timestamp: new Date(),
+          userPrompt: prompt,
+          agentResponse: formattedOutput,
+          actions,
+          metadata: {
+            logId: logSession.getLogId(),
+            toolCount: toolCalls.length,
+          },
+        });
+
+        if (stored) {
+          logger.info(`✅ Memory stored: ${memoryId}`);
+        } else {
+          logger.warn('⚠️  Failed to store memory');
+        }
+      }
 
       return {
         output: formattedOutput,
