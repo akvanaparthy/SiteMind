@@ -9,12 +9,27 @@ import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { useProducts } from '@/hooks/useAPI'
 import { Spinner } from '@/components/ui/Spinner'
+import { useCart } from '@/contexts/CartContext'
 
 export default function ProductsPage() {
   const [category, setCategory] = useState('all')
   const [sortBy, setSortBy] = useState('featured')
 
-  const { data: products, isLoading } = useProducts()
+  const { data: response, isLoading } = useProducts()
+  const products = response?.data || []
+  const { addItem } = useCart()
+
+  const handleAddToCart = (product: any, e: React.MouseEvent) => {
+    e.preventDefault()
+    addItem({
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      stock: product.stock,
+      image: null,
+    })
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -107,6 +122,7 @@ export default function ProductsPage() {
                           size="sm"
                           icon={<ShoppingCart className="w-4 h-4" />}
                           disabled={product.stock === 0}
+                          onClick={(e) => handleAddToCart(product, e)}
                         >
                           {product.stock > 0 ? 'Add to Cart' : 'Unavailable'}
                         </Button>

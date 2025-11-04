@@ -34,55 +34,38 @@ const fetcher = async (url: string) => {
 const API_BASE = '/api'
 
 // ============================================
-// PRODUCTS HOOKS (Mock Data - API Not Implemented Yet)
+// PRODUCTS HOOKS
 // ============================================
 
-// Temporary mock product data until backend API is ready
-const MOCK_PRODUCTS: Product[] = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  name: `Product ${i + 1}`,
-  slug: `product-${i + 1}`,
-  description: `This is a detailed description for Product ${i + 1}. It features high quality materials and excellent craftsmanship.`,
-  price: 99.99 + (i * 10),
-  stock: 50 + i,
-  image: null,
-  createdAt: new Date(Date.now() - i * 86400000).toISOString(),
-  updatedAt: new Date(Date.now() - i * 86400000).toISOString(),
-}))
+export function useProducts(filters?: {
+  category?: string
+  featured?: boolean
+  active?: boolean
+  limit?: number
+}): SWRResponse<{ success: boolean; data: Product[]; count: number }> {
+  const params = new URLSearchParams()
+  if (filters?.category) params.append('category', filters.category)
+  if (filters?.featured !== undefined) params.append('featured', filters.featured.toString())
+  if (filters?.active !== undefined) params.append('active', filters.active.toString())
+  if (filters?.limit) params.append('limit', filters.limit.toString())
 
-export function useProducts(): SWRResponse<Product[]> {
-  // TODO: Replace with real API call when backend implements /api/products
-  return {
-    data: MOCK_PRODUCTS,
-    error: undefined,
-    isValidating: false,
-    isLoading: false,
-    mutate: async () => MOCK_PRODUCTS,
-  } as SWRResponse<Product[]>
+  const url = `${API_BASE}/products${params.toString() ? `?${params.toString()}` : ''}`
+
+  return useSWR<{ success: boolean; data: Product[]; count: number }>(url, fetcher)
 }
 
-export function useProduct(slug: string): SWRResponse<Product | null> {
-  // TODO: Replace with real API call when backend implements /api/products/[slug]
-  const product = MOCK_PRODUCTS.find(p => p.slug === slug) || null
-  return {
-    data: product,
-    error: undefined,
-    isValidating: false,
-    isLoading: false,
-    mutate: async () => product,
-  } as SWRResponse<Product | null>
+export function useProduct(slug: string): SWRResponse<{ success: boolean; data: Product } | null> {
+  return useSWR<{ success: boolean; data: Product } | null>(
+    slug ? `${API_BASE}/products?slug=${slug}` : null,
+    fetcher
+  )
 }
 
-export function useFeaturedProducts(limit: number = 4): SWRResponse<Product[]> {
-  // TODO: Replace with real API call
-  const featured = MOCK_PRODUCTS.slice(0, limit)
-  return {
-    data: featured,
-    error: undefined,
-    isValidating: false,
-    isLoading: false,
-    mutate: async () => featured,
-  } as SWRResponse<Product[]>
+export function useFeaturedProducts(limit: number = 4): SWRResponse<{ success: boolean; data: Product[]; count: number }> {
+  return useSWR<{ success: boolean; data: Product[]; count: number }>(
+    `${API_BASE}/products?featured=true&active=true&limit=${limit}`,
+    fetcher
+  )
 }
 
 // ============================================
@@ -331,5 +314,20 @@ export function useSiteActions() {
 
     clearCache: () =>
       execute('/site', 'POST', { action: 'clearCache' }),
+  }
+}
+
+export function useProductActions() {
+  const { execute } = useAPIAction()
+
+  return {
+    create: (data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) =>
+      execute('/products', 'POST', data),
+
+    update: (id: number, data: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>) =>
+      execute('/products', 'PUT', { id, ...data }),
+
+    delete: (id: number) =>
+      execute(`/products?id=${id}`, 'DELETE'),
   }
 }

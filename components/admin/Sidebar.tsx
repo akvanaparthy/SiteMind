@@ -13,6 +13,7 @@ import {
   ListTree,
   ChevronLeft,
   ChevronRight,
+  Package,
 } from 'lucide-react'
 import { useAgent } from '@/contexts/AgentContext'
 import { Badge } from '@/components/ui/Badge'
@@ -25,6 +26,7 @@ export interface SidebarProps {
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+  { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Blog Posts', href: '/admin/posts', icon: FileText },
   { name: 'Support Tickets', href: '/admin/tickets', icon: Ticket },
   { name: 'Site Settings', href: '/admin/settings', icon: Settings },

@@ -33,11 +33,14 @@ export default function PostsPage() {
     authorId: 1, // Default to admin user
   })
 
-  const { data, isLoading, error } = usePosts(
+  const { data: response, isLoading, error } = usePosts(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
   )
   const { create, update, publish, trash } = usePostActions()
   const { success, error: showError } = useToast()
+
+  // Extract posts array from API response
+  const posts = (response as any)?.data || []
 
   const handleCreate = async () => {
     if (!formData.title.trim() || !formData.content.trim()) {
@@ -187,10 +190,10 @@ export default function PostsPage() {
     },
   ]
 
-  const filteredPosts = data?.filter((post: any) =>
-    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.slug.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || []
+  const filteredPosts = posts.filter((post: any) =>
+    post?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post?.slug?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="space-y-6">

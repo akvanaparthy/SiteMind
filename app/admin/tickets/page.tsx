@@ -16,6 +16,7 @@ import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useTickets, useTicketActions } from '@/hooks/useAPI'
 import { useToast } from '@/contexts/ToastContext'
 import { mutate } from 'swr'
+import { TicketChat } from '@/components/admin/TicketChat'
 
 export default function TicketsPage() {
   const [statusFilter, setStatusFilter] = useState('all')
@@ -31,9 +32,12 @@ export default function TicketsPage() {
   if (statusFilter !== 'all') filters.status = statusFilter
   if (priorityFilter !== 'all') filters.priority = priorityFilter
 
-  const { data, isLoading, error } = useTickets(Object.keys(filters).length > 0 ? filters : undefined)
+  const { data: response, isLoading, error } = useTickets(Object.keys(filters).length > 0 ? filters : undefined)
   const { close, assign, updatePriority } = useTicketActions()
   const { success, error: showError } = useToast()
+
+  // Extract tickets array from API response
+  const tickets = (response as any)?.data || []
 
   const handleViewDetails = (ticket: any) => {
     setSelectedTicket(ticket)
@@ -80,45 +84,43 @@ export default function TicketsPage() {
       header: 'Ticket ID',
       sortable: true,
       render: (ticket: any) => (
-        <span className="font-mono text-xs">{ticket.ticketId?.substring(0, 12)}...</span>
+        <span className="font-mono text-xs">{ticket.ticketId}</span>
       ),
     },
     {
       key: 'subject',
       header: 'Subject',
       sortable: true,
-      render: (ticket: any) => (
-        <div>
-          <p className="font-medium text-sm">{ticket.subject}</p>
-          <p className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-xs">
-            {ticket.description}
-          </p>
-        </div>
-      ),
     },
     {
       key: 'customer',
       header: 'Customer',
+      sortable: true,
       render: (ticket: any) => (
-        <div>
-          <p className="text-sm">{ticket.customer?.name || 'N/A'}</p>
-          <p className="text-xs text-slate-600 dark:text-slate-400">
-            {ticket.customer?.email}
-          </p>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+            <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
+              {ticket.customer?.name?.charAt(0) || 'U'}
+            </span>
+          </div>
+          <div>
+            <p className="font-medium text-sm">{ticket.customer?.name || 'Unknown'}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{ticket.customer?.email}</p>
+          </div>
         </div>
       ),
-    },
-    {
-      key: 'priority',
-      header: 'Priority',
-      sortable: true,
-      render: (ticket: any) => <StatusBadge status={ticket.priority} />,
     },
     {
       key: 'status',
       header: 'Status',
       sortable: true,
       render: (ticket: any) => <StatusBadge status={ticket.status} />,
+    },
+    {
+      key: 'priority',
+      header: 'Priority',
+      sortable: true,
+      render: (ticket: any) => <StatusBadge status={ticket.priority} />,
     },
     {
       key: 'createdAt',
@@ -130,23 +132,38 @@ export default function TicketsPage() {
       key: 'actions',
       header: 'Actions',
       render: (ticket: any) => (
-        <Button
-          size="sm"
-          variant="ghost"
-          icon={<Eye className="w-4 h-4" />}
-          onClick={() => handleViewDetails(ticket)}
-        >
-          View
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            icon={<Eye className="w-4 h-4" />}
+            onClick={() => handleViewDetails(ticket)}
+          >
+            View
+          </Button>
+          {ticket.status === 'OPEN' && (
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={<CheckCircle className="w-4 h-4" />}
+              onClick={() => {
+                setSelectedTicket(ticket)
+                setShowCloseModal(true)
+              }}
+            >
+              Close
+            </Button>
+          )}
+        </div>
       ),
     },
   ]
 
-  const filteredTickets = data?.filter((ticket: any) =>
-    ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ticket.ticketId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ticket.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || []
+  const filteredTickets = tickets.filter((ticket: any) =>
+    ticket?.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    ticket?.ticketId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    ticket?.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="space-y-6">
@@ -277,6 +294,12 @@ export default function TicketsPage() {
               <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                 <p className="text-sm whitespace-pre-wrap">{selectedTicket.description}</p>
               </div>
+            </div>
+
+            {/* Chat Messages */}
+            <div>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Conversation</p>
+              <TicketChat ticketId={selectedTicket.id} currentUserId={1} />
             </div>
 
             {/* Resolution (if closed) */}

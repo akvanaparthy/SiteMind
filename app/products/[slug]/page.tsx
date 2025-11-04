@@ -9,12 +9,29 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
 import { useProduct } from '@/hooks/useAPI'
+import { useCart } from '@/contexts/CartContext'
 
 export default function ProductDetailPage() {
   const params = useParams()
   const [quantity, setQuantity] = useState(1)
 
-  const { data: product, isLoading } = useProduct(params.slug as string)
+  const { data: response, isLoading } = useProduct(params.slug as string)
+  const product = response?.data || null
+  const { addItem } = useCart()
+
+  const handleAddToCart = () => {
+    if (product) {
+      addItem({
+        productId: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        stock: product.stock,
+        image: null,
+        quantity,
+      })
+    }
+  }
 
   if (isLoading) {
     return (
@@ -154,6 +171,7 @@ export default function ProductDetailPage() {
                     fullWidth
                     disabled={product.stock === 0}
                     size="lg"
+                    onClick={handleAddToCart}
                   >
                     Add to Cart - ${(product.price * quantity).toFixed(2)}
                   </Button>

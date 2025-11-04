@@ -68,6 +68,7 @@ model User {
   orders    Order[]
   tickets   Ticket[]
   posts     Post[]
+  ticketMessages TicketMessage[]
 
   @@index([email])
   @@index([role])
@@ -124,10 +125,29 @@ model Ticket {
   updatedAt   DateTime       @updatedAt
   closedAt    DateTime?
 
+  // Relations
+  messages    TicketMessage[]
+
   @@index([ticketId])
   @@index([customerId])
   @@index([status])
   @@index([priority])
+  @@index([createdAt])
+}
+
+model TicketMessage {
+  id         Int      @id @default(autoincrement())
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId   Int
+  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId   Int
+  message    String   @db.Text
+  isInternal Boolean  @default(false) // Internal notes visible only to staff
+  attachments Json?   // Array of attachment URLs and metadata
+  createdAt  DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([senderId])
   @@index([createdAt])
 }
 

@@ -26,11 +26,14 @@ export default function OrdersPage() {
   const [refundReason, setRefundReason] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const { data, isLoading, error } = useOrders(
+  const { data: response, isLoading, error } = useOrders(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
   )
   const { updateStatus, requestRefund, notifyCustomer } = useOrderActions()
   const { success, error: showError } = useToast()
+
+  // Extract orders array from API response
+  const orders = (response as any)?.data || []
 
   const handleViewDetails = (order: any) => {
     setSelectedOrder(order)
@@ -126,11 +129,11 @@ export default function OrdersPage() {
     },
   ]
 
-  const filteredOrders = data?.filter((order: any) =>
-    order.orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.customer?.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || []
+  const filteredOrders = orders.filter((order: any) =>
+    order?.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order?.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order?.customer?.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="space-y-6">

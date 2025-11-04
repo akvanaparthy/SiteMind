@@ -93,6 +93,8 @@ export const ticketAPI = {
 export const orderAPI = {
   get: (id: number) => makeRequest(`/orders?type=get&id=${id}`, 'GET'),
 
+  getAll: () => makeRequest('/orders', 'GET'),
+
   getPending: () => makeRequest('/orders?type=getPending', 'GET'),
 
   updateStatus: (id: number, status: 'PENDING' | 'DELIVERED' | 'REFUNDED') =>

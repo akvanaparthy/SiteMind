@@ -2,8 +2,9 @@
 
 import React from 'react'
 import { usePathname } from 'next/navigation'
-import { Bell, Search, Sun, Moon, User } from 'lucide-react'
+import { Bell, Search, Sun, Moon, User, LogOut, Settings } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
@@ -11,6 +12,7 @@ import { Badge } from '@/components/ui/Badge'
 export function Navbar() {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
+  const { user, logout } = useAuth()
 
   // Generate breadcrumbs from pathname
   const breadcrumbs = pathname
@@ -23,19 +25,14 @@ export function Navbar() {
 
   const userMenuItems = [
     {
-      label: 'Profile',
-      onClick: () => console.log('Profile'),
-      icon: <User className="w-4 h-4" />,
-    },
-    {
       label: 'Settings',
       onClick: () => console.log('Settings'),
-      icon: <User className="w-4 h-4" />,
+      icon: <Settings className="w-4 h-4" />,
     },
     {
       label: 'Logout',
-      onClick: () => console.log('Logout'),
-      icon: <User className="w-4 h-4" />,
+      onClick: logout,
+      icon: <LogOut className="w-4 h-4" />,
       danger: true,
     },
   ]
@@ -93,10 +90,10 @@ export function Navbar() {
             items={userMenuItems}
             trigger={
               <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <Avatar name="Admin User" size="sm" />
+                <Avatar name={user?.username || 'Admin'} size="sm" />
                 <div className="text-left hidden md:block">
-                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Admin</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">admin@sitemind.ai</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{user?.username || 'Admin'}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">{user?.role || 'admin'}</p>
                 </div>
               </div>
             }

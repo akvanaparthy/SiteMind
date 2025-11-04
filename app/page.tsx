@@ -2,17 +2,22 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, ShoppingBag, Zap, Shield, Star, FileText, Menu, X } from 'lucide-react'
+import { ArrowRight, ShoppingBag, Zap, Shield, Star, FileText, Menu, X, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useFeaturedProducts, usePosts } from '@/hooks/useAPI'
+import { useCart } from '@/contexts/CartContext'
+import { Badge } from '@/components/ui/Badge'
 import type { Product, Post } from '@/types/api'
 
 export default function HomePage() {
-  const { data: featuredProducts } = useFeaturedProducts(4)
-  const { data: recentPosts } = usePosts({ status: 'PUBLISHED', limit: 3 })
+  const { data: productsResponse } = useFeaturedProducts(4)
+  const featuredProducts = productsResponse?.data || []
+  const { data: postsResponse } = usePosts({ status: 'PUBLISHED', limit: 3 })
+  const recentPosts = postsResponse?.data || []
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { itemCount } = useCart()
 
   return (
     <div className="min-h-screen">
@@ -36,6 +41,14 @@ export default function HomePage() {
               </Link>
               <Link href="/blog" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
                 Blog
+              </Link>
+              <Link href="/cart" className="relative p-2 text-slate-700 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                <ShoppingCart className="w-5 h-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
               </Link>
               <Link href="/admin/dashboard">
                 <Button variant="primary" size="sm">
@@ -78,6 +91,19 @@ export default function HomePage() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Blog
+                </Link>
+                <Link
+                  href="/cart"
+                  className="flex items-center justify-between px-3 py-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <span className="flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5" />
+                    Cart
+                  </span>
+                  {itemCount > 0 && (
+                    <Badge variant="success">{itemCount}</Badge>
+                  )}
                 </Link>
                 <Link
                   href="/admin/dashboard"

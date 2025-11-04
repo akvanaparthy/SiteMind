@@ -51,11 +51,48 @@ Returns JSON response:
 });
 
 /**
+ * Get all orders (regardless of status)
+ */
+export const getAllOrdersTool = new DynamicStructuredTool({
+  name: 'get_all_orders',
+  description: `Retrieve ALL orders across all statuses (PENDING, DELIVERED, REFUNDED). Use this when asked to "list all orders", "show all orders", "what orders do we have", etc. This tool requires NO parameters.
+  
+Returns JSON response:
+{
+  "success": true,
+  "data": [
+    { "id": 1, "orderId": "...", "total": 99.99, "status": "DELIVERED", "createdAt": "...", "customer": {...}, "items": [...] },
+    { "id": 2, "orderId": "...", "total": 249.98, "status": "PENDING", "createdAt": "...", "customer": {...}, "items": [...] }
+  ],
+  "count": 2
+}`,
+  schema: z.object({}),
+  func: async (input: string | object) => {
+    try {
+      logger.debug('Tool: get_all_orders - Called (no parameters needed)');
+      const result = await orderAPI.getAll();
+      logger.info('Tool: get_all_orders - Success', { count: result.data?.length || 0 });
+      return JSON.stringify(result, null, 2);
+    } catch (error) {
+      logger.error('Tool: get_all_orders - Failed', error);
+      return JSON.stringify({
+        success: false,
+        action: 'getAllOrders',
+        error: {
+          code: 'TOOL_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
+    }
+  },
+});
+
+/**
  * Get all pending orders
  */
 export const getPendingOrdersTool = new DynamicStructuredTool({
   name: 'get_pending_orders',
-  description: `Retrieve all orders with PENDING status that need attention. This tool requires NO parameters.
+  description: `Retrieve ONLY orders with PENDING status that need attention. Use this when specifically asked about "pending orders" or "orders that need attention". This tool requires NO parameters.
   
 Returns JSON response:
 {
@@ -247,6 +284,7 @@ Returns JSON response:
  */
 export const orderTools = [
   getOrderTool,
+  getAllOrdersTool,
   getPendingOrdersTool,
   updateOrderStatusTool,
   processRefundTool,

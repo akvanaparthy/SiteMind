@@ -159,17 +159,40 @@ export async function POST(request: NextRequest) {
     }
 
     // Default: Create new order
-    const { customerId, items, total, status } = body;
+    const { customerId, items, total, status, shippingInfo } = body;
 
-    if (!customerId || !items || !total) {
+    if (!items || !total) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: customerId, items, total' },
+        { success: false, error: 'Missing required fields: items, total' },
         { status: 400 }
       );
     }
 
+    // For guest checkout, use a default guest customer (or create one)
+    let finalCustomerId = customerId;
+    if (!finalCustomerId) {
+      // Find or create a guest user
+      const guestUser = await prisma.user.findFirst({
+        where: { email: shippingInfo?.email || 'guest@sitemind.com' }
+      });
+      
+      if (guestUser) {
+        finalCustomerId = guestUser.id;
+      } else {
+        // Create guest user
+        const newGuest = await prisma.user.create({
+          data: {
+            email: shippingInfo?.email || 'guest@sitemind.com',
+            name: shippingInfo?.fullName || 'Guest',
+            role: 'USER',
+          }
+        });
+        finalCustomerId = newGuest.id;
+      }
+    }
+
     const order = await createOrder({
-      customerId,
+      customerId: finalCustomerId,
       items,
       total,
       status,
