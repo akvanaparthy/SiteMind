@@ -29,6 +29,8 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<AgentMessage[]>([])
   const [agentStatus, setAgentStatus] = useState<'online' | 'offline' | 'busy'>('offline')
   const { info, error } = useToast()
+  const messagesRef = React.useRef<AgentMessage[]>(messages)
+  const prevConnectedRef = React.useRef<boolean>(false)
 
   // Check agent service connection on mount
   useEffect(() => {
@@ -42,11 +44,16 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         if (result.success) {
           setIsConnected(true)
           setAgentStatus('online')
-          info('Agent Ready', 'AI agent service is online')
+          // Only notify when transitioning from offline -> online to avoid spammy toasts
+          if (!prevConnectedRef.current) {
+            info('Agent Ready', 'AI agent service is online')
+          }
+          prevConnectedRef.current = true
         }
       } catch (err) {
         setIsConnected(false)
         setAgentStatus('offline')
+        prevConnectedRef.current = false
       }
     }
 
@@ -57,6 +64,11 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval)
   }, [info])
 
+  // Keep a ref of the latest messages so callbacks can read current state
+  useEffect(() => {
+    messagesRef.current = messages
+  }, [messages])
+
   const sendCommand = useCallback(
     async (command: string) => {
       if (isExecuting) {
@@ -64,7 +76,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      // Add user message
+      // Add user message (mark pending so UI can show a spinner)
       const userMessage: AgentMessage = {
         id: Math.random().toString(36).substring(2, 9),
         role: 'user',
@@ -73,13 +85,18 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         status: 'pending',
       }
 
-      setMessages((prev) => [...prev, userMessage])
+      setMessages((prev) => {
+        const next = [...prev, userMessage]
+        messagesRef.current = next
+        return next
+      })
       setIsExecuting(true)
       setAgentStatus('busy')
 
       try {
         // Build conversation history (last 4 messages for context)
-        const history = messages
+        // Use the ref to ensure we have the latest messages state inside this callback
+        const history = messagesRef.current
           .slice(-4)
           .filter(msg => msg.role !== 'system' && msg.status === 'success')
           .map(msg => ({
@@ -125,7 +142,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
           content = 'Command executed successfully'
         }
 
-        // Add agent response message
+        // Add agent response message and mark user message as success
         const agentMessage: AgentMessage = {
           id: Math.random().toString(36).substring(2, 9),
           role: 'agent',
@@ -135,18 +152,28 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
           data: data.rawOutput || data.output,
         }
 
-        setMessages((prev) => [...prev, agentMessage])
+        setMessages((prev) => {
+          const updated = prev.map(m => m.id === userMessage.id ? { ...m, status: 'success' } : m)
+          const next = [...updated, agentMessage]
+          messagesRef.current = next
+          return next
+        })
         info('Success', 'Command executed successfully')
       } catch (err: any) {
-        const errorMessage: AgentMessage = {
-          id: Math.random().toString(36).substring(2, 9),
-          role: 'system',
-          content: err.message || 'An error occurred',
-          timestamp: new Date(),
-          status: 'error',
-        }
-
-        setMessages((prev) => [...prev, errorMessage])
+        // Mark user message as errored and add a system error message
+        setMessages((prev) => {
+          const updated = prev.map(m => m.id === userMessage.id ? { ...m, status: 'error' } : m)
+          const errorMessage: AgentMessage = {
+            id: Math.random().toString(36).substring(2, 9),
+            role: 'system',
+            content: err.message || 'An error occurred',
+            timestamp: new Date(),
+            status: 'error',
+          }
+          const next = [...updated, errorMessage]
+          messagesRef.current = next
+          return next
+        })
         error('Error', err.message || 'Failed to execute command')
       } finally {
         setIsExecuting(false)
@@ -158,6 +185,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
 
   const clearMessages = useCallback(() => {
     setMessages([])
+    messagesRef.current = []
   }, [])
 
   return (

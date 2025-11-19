@@ -13,7 +13,7 @@ import { logger } from '../utils/logger';
  */
 export const listCustomersTool = new DynamicStructuredTool({
   name: 'list_customers',
-  description: 'Get a list of all customers in the system with their basic information (id, name, email, role)',
+  description: 'Retrieve a comprehensive list of ALL customers in the system. Returns customer basic information including id, name, email, and role. Use this when asked to "list customers", "show all customers", "get customers", or "list all users". Supports pagination with limit and offset parameters.',
   schema: z.object({
     limit: z.number().optional().describe('Maximum number of customers to return (default: 50)'),
     offset: z.number().optional().describe('Number of customers to skip (for pagination)'),
