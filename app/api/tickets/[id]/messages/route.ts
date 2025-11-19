@@ -7,9 +7,8 @@ import prisma from '@/lib/prisma';
  */
 export async function GET(
   request: Request,
-  context: any
+  { params }: { params: { id: string } }
 ) {
-  const { params } = context as { params: { id: string } }
   try {
     const ticketId = parseInt(params.id);
 
@@ -50,9 +49,8 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  context: any
+  { params }: { params: { id: string } }
 ) {
-  const { params } = context as { params: { id: string } }
   try {
     const ticketId = parseInt(params.id);
     const body = await request.json();

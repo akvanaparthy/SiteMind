@@ -17,7 +17,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Simple hardcoded credentials
+// ⚠️ CRITICAL SECURITY WARNING ⚠️
+// TODO: Replace with NextAuth.js backend authentication
+// These hardcoded credentials are TEMPORARY and for development ONLY
+// DO NOT deploy to production without implementing proper auth
+// See TODO.md -> Critical Missing Features -> #1 Authentication System
 const ADMIN_USERNAME = 'admin'
 const ADMIN_PASSWORD = 'admin'
 

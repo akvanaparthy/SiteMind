@@ -36,7 +36,7 @@ const CART_STORAGE_KEY = 'sitemind_cart'
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
-  const { showToast } = useToast()
+  const { success, error: showError, info } = useToast()
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -81,7 +81,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Check stock limit
       const newQuantity = existingItem.quantity + quantity
       if (newQuantity > item.stock) {
-        showToast(`Cannot add more. Only ${item.stock} in stock.`, 'error')
+        showError(`Cannot add more. Only ${item.stock} in stock.`, 'Stock Limit')
         return
       }
 
@@ -93,11 +93,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
             : i
         )
       )
-      showToast(`Updated ${item.name} quantity to ${newQuantity}`, 'success')
+      success(`Updated ${item.name} quantity to ${newQuantity}`, 'Cart Updated')
     } else {
       // Check stock
       if (quantity > item.stock) {
-        showToast(`Cannot add ${quantity}. Only ${item.stock} in stock.`, 'error')
+        showError(`Cannot add ${quantity}. Only ${item.stock} in stock.`, 'Stock Limit')
         return
       }
 
@@ -113,7 +113,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         stock: item.stock,
       }
       setItems((prev) => [...prev, newItem])
-      showToast(`Added ${item.name} to cart`, 'success')
+      success(`Added ${item.name} to cart`, 'Item Added')
     }
   }
 
@@ -122,7 +122,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const item = items.find((i) => i.id === id)
     setItems((prev) => prev.filter((i) => i.id !== id))
     if (item) {
-      showToast(`Removed ${item.name} from cart`, 'info')
+      info(`Removed ${item.name} from cart`, 'Item Removed')
     }
   }
 
@@ -150,7 +150,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Clear all items
   const clearCart = () => {
     setItems([])
-    showToast('Cart cleared', 'info')
+    info('Cart cleared', 'Cart Empty')
   }
 
   // Check if product is in cart

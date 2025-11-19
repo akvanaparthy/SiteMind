@@ -15,7 +15,7 @@ type CheckoutStep = 'shipping' | 'payment' | 'review'
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, subtotal, tax, total, clearCart } = useCart()
-  const { showToast } = useToast()
+  const { success, error } = useToast()
 
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('shipping')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -56,7 +56,7 @@ export default function CheckoutPage() {
     
     // Validate shipping info
     if (!shippingInfo.fullName || !shippingInfo.email || !shippingInfo.address || !shippingInfo.city || !shippingInfo.zipCode) {
-      showToast('Please fill in all required fields', 'error')
+      error('Please fill in all required fields', 'Validation Error')
       return
     }
 
@@ -68,7 +68,7 @@ export default function CheckoutPage() {
 
     // Validate payment info
     if (!paymentInfo.cardNumber || !paymentInfo.cardName || !paymentInfo.expiryDate || !paymentInfo.cvv) {
-      showToast('Please fill in all payment details', 'error')
+      error('Please fill in all payment details', 'Validation Error')
       return
     }
 
@@ -109,10 +109,10 @@ export default function CheckoutPage() {
       clearCart()
 
       // Show success and redirect
-      showToast('Order placed successfully!', 'success')
+      success('Order placed successfully!', 'Order Confirmed')
       router.push(`/order-confirmation?orderId=${result.data.orderId}`)
-    } catch (error: any) {
-      showToast(error.message || 'Failed to place order', 'error')
+    } catch (err: any) {
+      error(err.message || 'Failed to place order', 'Order Failed')
     } finally {
       setIsProcessing(false)
     }

@@ -7,7 +7,6 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { Avatar } from '@/components/ui/Avatar'
-import { Badge } from '@/components/ui/Badge'
 
 export function Navbar() {
   const pathname = usePathname()
