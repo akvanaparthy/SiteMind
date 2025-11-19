@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 /**
@@ -6,9 +6,10 @@ import prisma from '@/lib/prisma';
  * Get all messages for a ticket
  */
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: any
 ) {
+  const { params } = context as { params: { id: string } }
   try {
     const ticketId = parseInt(params.id);
 
@@ -48,9 +49,10 @@ export async function GET(
  * Create a new message in a ticket
  */
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: any
 ) {
+  const { params } = context as { params: { id: string } }
   try {
     const ticketId = parseInt(params.id);
     const body = await request.json();
