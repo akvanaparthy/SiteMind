@@ -267,8 +267,8 @@ function MessageBubble({ message }: { message: any }) {
         </div>
 
         {/* Status & Timestamp */}
-        <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
-          <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
+        <div className={`flex items-center gap-2 mt-1 text-xs text-slate-500 dark:text-slate-400 ${isUser ? 'justify-end' : 'justify-start'}`}>
+          <span>{new Date(message.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
           {message.status && (
             <>
               <span>•</span>

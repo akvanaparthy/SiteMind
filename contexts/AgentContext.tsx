@@ -158,7 +158,6 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
           messagesRef.current = next
           return next
         })
-        info('Success', 'Command executed successfully')
       } catch (err: any) {
         // Mark user message as errored and add a system error message
         setMessages((prev) => {
