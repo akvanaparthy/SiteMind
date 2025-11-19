@@ -164,7 +164,7 @@ export default function DashboardPage() {
               </p>
             ) : (
               <div className="space-y-3">
-                {recentLogs.logs.map((log: any) => (
+                {Array.isArray(recentLogs?.logs) && recentLogs.logs.map((log: any) => (
                   <div
                     key={log.id}
                     className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50"

@@ -138,7 +138,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     // Check stock limit
     if (quantity > item.stock) {
-      showToast(`Cannot add more. Only ${item.stock} in stock.`, 'error')
+      showError(`Cannot add more. Only ${item.stock} in stock.`, 'Stock Limit')
       return
     }
 

@@ -153,7 +153,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         }
 
         setMessages((prev) => {
-          const updated = prev.map(m => m.id === userMessage.id ? { ...m, status: 'success' } : m)
+          const updated = prev.map(m => m.id === userMessage.id ? { ...m, status: 'success' as const } : m)
           const next = [...updated, agentMessage]
           messagesRef.current = next
           return next
@@ -161,7 +161,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       } catch (err: any) {
         // Mark user message as errored and add a system error message
         setMessages((prev) => {
-          const updated = prev.map(m => m.id === userMessage.id ? { ...m, status: 'error' } : m)
+          const updated = prev.map(m => m.id === userMessage.id ? { ...m, status: 'error' as const } : m)
           const errorMessage: AgentMessage = {
             id: Math.random().toString(36).substring(2, 9),
             role: 'system',

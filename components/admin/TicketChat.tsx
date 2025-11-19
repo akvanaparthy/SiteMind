@@ -45,7 +45,7 @@ export function TicketChat({ ticketId, currentUserId = 1 }: TicketChatProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { showToast } = useToast()
+  const { success, error: showError } = useToast()
 
   const { data, isLoading, error } = useSWR(
     `/api/tickets/${ticketId}/messages`,
@@ -81,9 +81,9 @@ export function TicketChat({ ticketId, currentUserId = 1 }: TicketChatProps) {
       setAttachments([])
       setIsInternal(false)
       mutate(`/api/tickets/${ticketId}/messages`)
-      showToast('Message sent successfully', 'success')
+      success('Message sent successfully', 'Message Sent')
     } catch (err: any) {
-      showToast(err.message || 'Failed to send message', 'error')
+      showError(err.message || 'Failed to send message', 'Send Failed')
     } finally {
       setIsSending(false)
     }
@@ -95,7 +95,7 @@ export function TicketChat({ ticketId, currentUserId = 1 }: TicketChatProps) {
 
     // Limit to 5 files
     if (attachments.length + files.length > 5) {
-      showToast('Maximum 5 attachments allowed', 'error')
+      showError('Maximum 5 attachments allowed', 'Attachment Limit')
       return
     }
 
@@ -107,7 +107,7 @@ export function TicketChat({ ticketId, currentUserId = 1 }: TicketChatProps) {
 
       // Check file size
       if (file.size > MAX_FILE_SIZE) {
-        showToast(`File "${file.name}" is too large. Max size is 5MB.`, 'error')
+        showError(`File "${file.name}" is too large. Max size is 5MB.`, 'File Too Large')
         continue
       }
 

@@ -7,10 +7,11 @@ import prisma from '@/lib/prisma';
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const ticketId = parseInt(params.id);
+    const ticketId = parseInt(id);
 
     const messages = await prisma.ticketMessage.findMany({
       where: { ticketId },
@@ -49,10 +50,11 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const ticketId = parseInt(params.id);
+    const ticketId = parseInt(id);
     const body = await request.json();
     const { senderId, message, isInternal = false, attachments } = body;
 

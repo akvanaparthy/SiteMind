@@ -242,7 +242,7 @@ export default function OrdersPage() {
             <div>
               <h4 className="font-semibold mb-3">Order Items</h4>
               <div className="space-y-2">
-                {(selectedOrder.items as any[])?.map((item: any, index: number) => (
+                {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, index: number) => (
                   <div
                     key={index}
                     className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg"

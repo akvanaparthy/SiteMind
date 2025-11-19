@@ -16,7 +16,7 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState('featured')
 
   const { data: response, isLoading } = useProducts()
-  const products = response?.data || []
+  const products = Array.isArray(response?.data) ? response.data : []
   const { addItem } = useCart()
 
   const handleAddToCart = (product: any, e: React.MouseEvent) => {

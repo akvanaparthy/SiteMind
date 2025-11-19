@@ -13,9 +13,9 @@ import type { Product, Post } from '@/types/api'
 
 export default function HomePage() {
   const { data: productsResponse } = useFeaturedProducts(4)
-  const featuredProducts = productsResponse?.data || []
-  const { data: postsResponse } = usePosts({ status: 'PUBLISHED', limit: 3 })
-  const recentPosts = postsResponse?.data || []
+  const featuredProducts = Array.isArray(productsResponse?.data) ? productsResponse.data : []
+  const { data: posts } = usePosts({ status: 'PUBLISHED', limit: 3 })
+  const recentPosts = Array.isArray(posts) ? posts : []
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { itemCount, addItem } = useCart()
 
