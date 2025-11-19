@@ -136,7 +136,6 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         }
 
         setMessages((prev) => [...prev, agentMessage])
-        info('Success', 'Command executed successfully')
       } catch (err: any) {
         const errorMessage: AgentMessage = {
           id: Math.random().toString(36).substring(2, 9),
