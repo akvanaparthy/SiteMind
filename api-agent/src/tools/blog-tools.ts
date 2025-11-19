@@ -277,47 +277,6 @@ Returns JSON response:
 });
 
 /**
- * Get a blog post by ID
- */
-export const getBlogPostTool = new DynamicStructuredTool({
-  name: 'get_blog_post',
-  description: `Retrieve a blog post by its ID.
-  
-Returns JSON response:
-{
-  "success": true,
-  "action": "getBlogPost",
-  "message": "Blog post retrieved successfully",
-  "data": {
-    "post": { "id": 1, "title": "...", "content": "...", "status": "...", ... }
-  },
-  "logId": 127
-}`,
-  schema: z.object({
-    id: z.coerce.number().describe('ID of the blog post to retrieve'),
-  }),
-  func: async (input) => {
-    try {
-      const parsed = parseToolInput<{id: number}>(input);
-      logger.debug('Tool: get_blog_post', parsed);
-      const result = await blogAPI.get(parsed.id);
-      logger.info('Tool: get_blog_post - Success', { postId: parsed.id });
-      return JSON.stringify(result, null, 2);
-    } catch (error) {
-      logger.error('Tool: get_blog_post - Failed', error);
-      return JSON.stringify({
-        success: false,
-        action: 'getBlogPost',
-        error: {
-          code: 'TOOL_ERROR',
-          message: error instanceof Error ? error.message : 'Unknown error',
-        },
-      });
-    }
-  },
-});
-
-/**
  * Export all blog tools
  */
 export const blogTools = [
@@ -328,5 +287,4 @@ export const blogTools = [
   updateBlogPostTool,
   publishBlogPostTool,
   trashBlogPostTool,
-  getBlogPostByIdTool,
 ];

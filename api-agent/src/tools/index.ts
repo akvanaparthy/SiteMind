@@ -15,10 +15,10 @@ import { contentTools } from './content-tools';
 
 /**
  * All available tools for the agent
- * Total: 57 tools (21 original + 36 new)
+ * Total: 56 tools (21 original + 35 new)
  * 
  * Breakdown:
- * - Blog: 8 tools (list, search, get, create, update, publish, trash, getById)
+ * - Blog: 7 tools (list, search, get, create, update, publish, trash)
  * - Tickets: 8 tools (list, search, create, get, getOpen, close, updatePriority, assign)
  * - Orders: 5 tools (get, getAll, getPending, updateStatus, processRefund, notifyCustomer)
  * - Site: 4 tools (getStatus, getAnalytics, toggleMaintenance, clearCache)
@@ -29,7 +29,7 @@ import { contentTools } from './content-tools';
  * - Content: 6 tools (schedule, generate, optimizeSEO, createPage, getAnalytics, bulkSchedule)
  */
 export const allTools = [
-  ...blogTools,       // 8 tools: list, search, get, create, update, publish, trash, getById
+  ...blogTools,       // 7 tools: list, search, get, create, update, publish, trash
   ...ticketTools,     // 8 tools: list, search, create, get, getOpen, close, updatePriority, assign
   ...orderTools,      // 5 tools: get, getAll, getPending, updateStatus, processRefund, notifyCustomer
   ...siteTools,       // 4 tools: getStatus, getAnalytics, toggleMaintenance, clearCache
