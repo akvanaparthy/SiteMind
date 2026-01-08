@@ -40,7 +40,7 @@ export default function PostsPage() {
   const { success, error: showError } = useToast()
 
   // Extract posts array from API response
-  const posts = (response as any)?.data || []
+  const posts = Array.isArray((response as any)?.data?.posts) ? (response as any).data.posts : []
 
   const handleCreate = async () => {
     if (!formData.title.trim() || !formData.content.trim()) {

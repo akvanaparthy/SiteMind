@@ -237,8 +237,8 @@ export function useAPIAction() {
     })
 
     if (!res.ok) {
-      const error = await res.json().catch(() => ({ message: 'An error occurred' }))
-      throw new Error(error.message || 'Action failed')
+      const errorData = await res.json().catch(() => ({ error: 'An error occurred' }))
+      throw new Error(errorData.error || errorData.message || 'Action failed')
     }
 
     return res.json()

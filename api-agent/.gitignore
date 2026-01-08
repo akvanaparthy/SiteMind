@@ -57,3 +57,7 @@ test-results-*.json
 
 # Scripts (one-time use)
 src/scripts/
+
+.claude/*
+.claude
+.claude/

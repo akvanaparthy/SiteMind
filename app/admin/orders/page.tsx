@@ -33,7 +33,7 @@ export default function OrdersPage() {
   const { success, error: showError } = useToast()
 
   // Extract orders array from API response
-  const orders = (response as any)?.data || []
+  const orders = Array.isArray((response as any)?.data) ? (response as any).data : []
 
   const handleViewDetails = (order: any) => {
     setSelectedOrder(order)
@@ -77,10 +77,13 @@ export default function OrdersPage() {
   const columns = [
     {
       key: 'orderId',
-      header: 'Order ID',
+      header: 'Order',
       sortable: true,
       render: (order: any) => (
-        <span className="font-mono text-xs">{order.orderId.substring(0, 12)}...</span>
+        <div>
+          <p className="font-semibold text-sm">Order #{order.id}</p>
+          <p className="font-mono text-xs text-slate-500 dark:text-slate-400">{order.orderId.substring(0, 12)}...</p>
+        </div>
       ),
     },
     {
@@ -214,8 +217,9 @@ export default function OrdersPage() {
             {/* Order Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Order ID</p>
-                <p className="font-mono text-sm font-medium mt-1">{selectedOrder.orderId}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Order Number</p>
+                <p className="text-lg font-bold mt-1">Order #{selectedOrder.id}</p>
+                <p className="font-mono text-xs text-slate-500 dark:text-slate-400 mt-1">{selectedOrder.orderId}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Status</p>

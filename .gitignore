@@ -104,3 +104,6 @@ prisma/*.db-journal
 test-results.json
 comprehensive-test-results.json
 test-results-*.json
+
+# Claude AI
+.claude/

@@ -37,7 +37,7 @@ export default function TicketsPage() {
   const { success, error: showError } = useToast()
 
   // Extract tickets array from API response
-  const tickets = (response as any)?.data || []
+  const tickets = Array.isArray((response as any)?.data?.tickets) ? (response as any).data.tickets : []
 
   const handleViewDetails = (ticket: any) => {
     setSelectedTicket(ticket)
@@ -81,10 +81,13 @@ export default function TicketsPage() {
   const columns = [
     {
       key: 'ticketId',
-      header: 'Ticket ID',
+      header: 'Ticket',
       sortable: true,
       render: (ticket: any) => (
-        <span className="font-mono text-xs">{ticket.ticketId}</span>
+        <div>
+          <p className="font-semibold text-sm">Ticket #{ticket.id}</p>
+          <p className="font-mono text-xs text-slate-500 dark:text-slate-400">{ticket.ticketId.substring(0, 12)}...</p>
+        </div>
       ),
     },
     {
@@ -249,8 +252,9 @@ export default function TicketsPage() {
             {/* Ticket Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Ticket ID</p>
-                <p className="font-mono text-sm font-medium mt-1">{selectedTicket.ticketId}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Ticket Number</p>
+                <p className="text-lg font-bold mt-1">Ticket #{selectedTicket.id}</p>
+                <p className="font-mono text-xs text-slate-500 dark:text-slate-400 mt-1">{selectedTicket.ticketId}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Status</p>

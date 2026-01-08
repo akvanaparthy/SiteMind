@@ -13,6 +13,7 @@ interface AuthContextType {
   login: (username: string, password: string) => boolean
   logout: () => void
   isAuthenticated: boolean
+  isLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -27,6 +28,7 @@ const ADMIN_PASSWORD = 'admin'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
   // Load user from localStorage on mount
@@ -39,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('user')
       }
     }
+    setIsLoading(false)
   }, [])
 
   const login = (username: string, password: string): boolean => {
@@ -58,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, isLoading }}>
       {children}
     </AuthContext.Provider>
   )

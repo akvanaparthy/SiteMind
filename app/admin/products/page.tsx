@@ -18,7 +18,7 @@ import type { Product } from '@/types/api'
 
 export default function AdminProductsPage() {
   const { data: response, isLoading, mutate } = useProducts()
-  const products = response?.data || []
+  const products = Array.isArray(response?.data) ? response.data : []
   const productActions = useProductActions()
   const { success, error: showError } = useToast()
 
@@ -73,8 +73,23 @@ export default function AdminProductsPage() {
       setIsSubmitting(true)
 
       // Validation
-      if (!formData.name || !formData.slug || !formData.description || !formData.price || !formData.stock) {
-        showError('Please fill in all required fields')
+      if (!formData.name.trim() || !formData.slug.trim() || !formData.description.trim() ||
+          formData.price === '' || formData.stock === '') {
+        showError('Missing Required Fields', 'Please fill in all required fields: name, slug, description, price, and stock')
+        return
+      }
+
+      // Validate numeric values
+      const price = parseFloat(formData.price)
+      const stock = parseInt(formData.stock)
+
+      if (isNaN(price) || price < 0) {
+        showError('Invalid Price', 'Price must be a valid number greater than or equal to 0')
+        return
+      }
+
+      if (isNaN(stock) || stock < 0) {
+        showError('Invalid Stock', 'Stock must be a valid number greater than or equal to 0')
         return
       }
 
@@ -84,33 +99,34 @@ export default function AdminProductsPage() {
           name: formData.name,
           slug: formData.slug,
           description: formData.description,
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock),
+          price,
+          stock,
           category: formData.category || null,
           featured: formData.featured,
           active: formData.active,
         })
-        success('Product updated successfully')
+        success('Product Updated', 'Product updated successfully')
       } else {
         // Create
         await productActions.create({
           name: formData.name,
           slug: formData.slug,
           description: formData.description,
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock),
+          price,
+          stock,
           category: formData.category || null,
           images: null,
           featured: formData.featured,
           active: formData.active,
         })
-        success('Product created successfully')
+        success('Product Created', 'Product created successfully')
       }
 
       setShowModal(false)
       mutate()
     } catch (error: any) {
-      showError(error.message || 'Failed to save product')
+      console.error('Product save error:', error)
+      showError('Save Failed', error.message || 'Failed to save product. Please check your input and try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -332,15 +348,29 @@ export default function AdminProductsPage() {
           <Input
             label="Product Name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => {
+              const name = e.target.value
+              const slug = name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '')
+              setFormData({ ...formData, name, slug: slug || formData.slug })
+            }}
             placeholder="Enter product name"
             required
           />
           <Input
-            label="Slug"
+            label="Slug (URL-friendly)"
             value={formData.slug}
-            onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-            placeholder="product-slug"
+            onChange={(e) => {
+              const slug = e.target.value
+                .toLowerCase()
+                .replace(/[^a-z0-9-]/g, '-')
+                .replace(/--+/g, '-')
+                .replace(/(^-|-$)/g, '')
+              setFormData({ ...formData, slug })
+            }}
+            placeholder="auto-generated-from-name"
             required
           />
           <Textarea

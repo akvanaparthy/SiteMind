@@ -93,22 +93,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if slug already exists
-    const existing = await prisma.product.findUnique({
-      where: { slug },
-    });
+    // Check if slug already exists and generate unique one if needed
+    let uniqueSlug = slug;
+    let suffix = 1;
+    let existing = await prisma.product.findUnique({ where: { slug: uniqueSlug } });
 
-    if (existing) {
-      return NextResponse.json(
-        { success: false, error: 'Product with this slug already exists' },
-        { status: 400 }
-      );
+    while (existing) {
+      uniqueSlug = `${slug}-${suffix}`;
+      existing = await prisma.product.findUnique({ where: { slug: uniqueSlug } });
+      suffix++;
+
+      // Safety limit to prevent infinite loop
+      if (suffix > 100) {
+        return NextResponse.json(
+          { success: false, error: 'Unable to generate unique slug. Please try a different product name.' },
+          { status: 400 }
+        );
+      }
     }
 
     const product = await prisma.product.create({
       data: {
         name,
-        slug,
+        slug: uniqueSlug,
         description,
         price: parseFloat(price),
         stock: parseInt(stock),

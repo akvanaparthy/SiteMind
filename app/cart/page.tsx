@@ -1,5 +1,8 @@
 'use client'
 
+// Force dynamic rendering to prevent static generation errors
+export const dynamic = 'force-dynamic'
+
 import React from 'react'
 import Link from 'next/link'
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ArrowLeft } from 'lucide-react'
@@ -32,16 +35,13 @@ export default function CartPage() {
         {/* Empty State */}
         <div className="flex items-center justify-center py-20">
           <EmptyState
-            icon={<ShoppingCart className="w-12 h-12" />}
+            icon={ShoppingCart}
             title="Your cart is empty"
             description="Add some products to get started"
-            action={
-              <Link href="/products">
-                <Button variant="primary" icon={<ShoppingCart className="w-5 h-5" />}>
-                  Browse Products
-                </Button>
-              </Link>
-            }
+            action={{
+              label: 'Browse Products',
+              onClick: () => router.push('/products')
+            }}
           />
         </div>
       </div>
